@@ -61,6 +61,8 @@ void Time::setTargetFPS(int target_fps) {
     }
     target_fps_ = target_fps;
     target_frame_time_ = 1.0 / static_cast<double>(target_fps);
+
+    spdlog::info("Target FPS set to: {}, target frame time: {}", target_fps, target_frame_time_);
 }
 
 } // namespace engine::core

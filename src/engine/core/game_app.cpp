@@ -4,6 +4,8 @@
 
 #include "time.h"
 #include "../resource/resource_manager.h"
+#include "../render/camera.h"
+#include "../render/renderer.h"
 
 namespace engine::core{
 
@@ -45,6 +47,8 @@ bool GameApp::init() {
     if (!initSDL()) return false;
     if (!initTime()) return false;
     if (!initResourceManager()) return false;
+    if (!initRenderer()) return false;
+    if (!initCamera()) return false;
 
     // 测试代码
     testResourceManager();
@@ -65,10 +69,15 @@ void GameApp::handleEvents(){
 
 void GameApp::update(float /* delta_time */){
     // TODO: Implement update logic
+    testCamera();
 }
 
 void GameApp::render(){
     // TODO: Implement render logic
+
+    renderer_->clearScreen();
+    testRenderer();
+    renderer_->present();
 }
 
 void GameApp::close(){
@@ -105,6 +114,9 @@ bool GameApp::initSDL()
         spdlog::error("GameApp::init() - Failed to create renderer: {}", SDL_GetError());
         return false;
     }
+
+    // 设置渲染器逻辑分辨率
+    SDL_SetRenderLogicalPresentation(sdl_renderer_, 640,360,SDL_LOGICAL_PRESENTATION_LETTERBOX);
     spdlog::trace("SDL initialized successfully");
     return true;
 }
@@ -137,6 +149,38 @@ bool GameApp::initResourceManager(){
     return true;
 }
 
+bool GameApp::initRenderer()
+{
+    try
+    {
+        renderer_ = std::make_unique<engine::render::Renderer>(sdl_renderer_,resource_manager_.get());
+    }
+    catch(const std::exception& e)
+    {
+        spdlog::error("GameApp::initRenderer() - Failed to initialize Renderer: {}", e.what());
+        return false;
+    }
+
+    spdlog::trace("Renderer initialized successfully");
+    return true;
+}
+
+bool GameApp::initCamera()
+{
+    try
+    {
+        camera_ = std::make_unique<engine::render::Camera>(glm::vec2(640,360));
+    }
+    catch(const std::exception& e)
+    {
+        spdlog::error("GameApp::initCamera() - Failed to initialize Camera: {}", e.what());
+        return false;
+    }
+
+    spdlog::trace("Camera initialized successfully");
+    return true;
+}
+
 void GameApp::testResourceManager(){
     resource_manager_->getTexture("assets/textures/Actors/eagle-attack.png");
     resource_manager_->getFont("assets/fonts/VonwaonBitmap-16px.ttf", 16);
@@ -145,6 +189,30 @@ void GameApp::testResourceManager(){
     resource_manager_->unloadTexture("assets/textures/Actors/eagle-attack.png");
     resource_manager_->unloadFont("assets/fonts/VonwaonBitmap-16px.ttf", 16);
     resource_manager_->unloadSound("assets/audio/button_click.wav");
+}
+
+void GameApp::testRenderer()
+{
+    engine::render::Sprite sprite_world("assets/textures/Actors/frog.png");
+    engine::render::Sprite sprite_ui("assets/textures/UI/buttons/Start1.png");
+    engine::render::Sprite sprite_parallax("assets/textures/Layers/back.png");
+
+    static float rotation = 0.0f;
+    rotation += 0.01f;
+
+    renderer_->drawParallax(*camera_, sprite_parallax, glm::vec2(100,100), glm::vec2(0.5f,0.5f), glm::bvec2(true,false));
+    renderer_->drawSprite(*camera_, sprite_world, glm::vec2(200,200), glm::vec2(1.0f,1.0f), rotation);
+    renderer_->drawUISprite(sprite_ui, glm::vec2(100,100));
+
+}
+
+void GameApp::testCamera()
+{
+    auto key_state = SDL_GetKeyboardState(nullptr);
+    if (key_state[SDL_SCANCODE_UP]) camera_->move(glm::vec2(0,-1));
+    if (key_state[SDL_SCANCODE_DOWN]) camera_->move(glm::vec2(0,1));
+    if (key_state[SDL_SCANCODE_LEFT]) camera_->move(glm::vec2(-1,0));
+    if (key_state[SDL_SCANCODE_RIGHT]) camera_->move(glm::vec2(1,0));
 }
 
 } // namespace engine::core
