@@ -1,0 +1,48 @@
+{
+    "window": {
+        "title": "SunnyLand",
+        "width": 1280,
+        "height": 720,
+        "resizable": true
+    },
+    "graphics": {
+        "vsync": true
+    },
+    "performance": {
+        "target_fps": 144
+    },
+    "audio": {
+        "music_volume": 0.5,
+        "sound_volume": 0.5
+    },
+    "input_mappings": {
+        "pause": [
+            "P",
+            "Escape"
+        ],
+        "attack": [
+            "F",
+            "MouseLeft"
+        ],
+        "jump": [
+            "J",
+            "SPACE"
+        ],
+        "move_right": [
+            "D",
+            "RIGHT"
+        ],
+        "move_left": [
+            "A",
+            "LEFT"
+        ],
+        "move_down": [
+            "S",
+            "DOWN"
+        ],
+        "move_up": [
+            "W",
+            "UP"
+        ]
+    }
+}

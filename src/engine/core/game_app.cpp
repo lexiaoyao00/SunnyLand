@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "time.h"
+#include "config.h"
 #include "../resource/resource_manager.h"
 #include "../render/camera.h"
 #include "../render/renderer.h"
@@ -44,6 +45,7 @@ void GameApp::run(){
 
 bool GameApp::init() {
     spdlog::trace("GameApp::init() - Initializing the game app ... ");
+    if (!initConfig()) return false;
     if (!initSDL()) return false;
     if (!initTime()) return false;
     if (!initResourceManager()) return false;
@@ -96,6 +98,22 @@ void GameApp::close(){
     is_running_ = false;;
 }
 
+bool GameApp::initConfig()
+{
+    try
+    {
+        config_ = std::make_unique<engine::core::Config>("assets/config.json");
+    }
+    catch(const std::exception& e)
+    {
+        spdlog::error("GameApp::initConfig() - Failed to initialize Config: {}", e.what());
+        return false;
+    }
+
+    spdlog::trace("Config initialized successfully");
+    return true;
+}
+
 bool GameApp::initSDL()
 {
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)){
@@ -103,7 +121,7 @@ bool GameApp::initSDL()
         return false;
     }
 
-    window_ = SDL_CreateWindow("SunnyLand",1280,720,SDL_WINDOW_RESIZABLE);
+    window_ = SDL_CreateWindow(config_->window_title_.c_str(),config_->window_width_,config_->window_height_,SDL_WINDOW_RESIZABLE);
     if (window_ == nullptr){
         spdlog::error("GameApp::init() - Failed to create window: {}", SDL_GetError());
         return false;
@@ -115,8 +133,13 @@ bool GameApp::initSDL()
         return false;
     }
 
-    // 设置渲染器逻辑分辨率
-    SDL_SetRenderLogicalPresentation(sdl_renderer_, 640,360,SDL_LOGICAL_PRESENTATION_LETTERBOX);
+    // 设置 VSync (注意：VSync 开启时，驱动程序会尝试将帧率限制到显示器刷新率，有可能会覆盖我们手动设置的帧率 target_fps)
+    int vsync = config_->vsync_enabled_ ? SDL_RENDERER_VSYNC_ADAPTIVE : SDL_RENDERER_VSYNC_DISABLED;
+    SDL_SetRenderVSync(sdl_renderer_, vsync);
+    spdlog::trace("VSync set to {}", config_->vsync_enabled_);
+
+    // 设置渲染器逻辑分辨率为屏幕分辨率的 1/2，针对像素艺术游戏，可以避免拉伸
+    SDL_SetRenderLogicalPresentation(sdl_renderer_, config_->window_width_ / 2, config_->window_height_ / 2,SDL_LOGICAL_PRESENTATION_LETTERBOX);
     spdlog::trace("SDL initialized successfully");
     return true;
 }
@@ -131,6 +154,7 @@ bool GameApp::initTime(){
         spdlog::error("GameApp::initTime() - Failed to initialize Time: {}", e.what());
         return false;
     }
+    time_->setTargetFPS(config_->target_fps_);
     spdlog::trace("Time initialized successfully");
     return true;
 }
@@ -169,7 +193,7 @@ bool GameApp::initCamera()
 {
     try
     {
-        camera_ = std::make_unique<engine::render::Camera>(glm::vec2(640,360));
+        camera_ = std::make_unique<engine::render::Camera>(glm::vec2(config_->window_width_ / 2,config_->window_height_ / 2));
     }
     catch(const std::exception& e)
     {
