@@ -3,7 +3,7 @@
 
 int main(int /* argc */, char** /* argv[] */)
 {
-    spdlog::set_level(spdlog::level::debug);
+    spdlog::set_level(spdlog::level::info);
     // Create the game app
     engine::core::GameApp game_app;
 
