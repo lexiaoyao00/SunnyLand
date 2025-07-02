@@ -2,6 +2,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <variant>      // c++17
 #include <SDL3/SDL_render.h>
 #include <glm/vec2.hpp>
 
@@ -25,8 +26,7 @@ namespace engine::input
     private:
         SDL_Renderer *sdl_renderer_;                                                         // 用于获取逻辑坐标的 SDL_Renderer 指针
         std::unordered_map<std::string, std::vector<std::string>> actions_to_keyname_map_;    // 动作到键名的映射
-        std::unordered_map<SDL_Scancode, std::vector<std::string>> scancode_to_actions_map_; // 键码到动作的映射
-        std::unordered_map<Uint8, std::vector<std::string>> mouse_button_to_actions_map_;    // 鼠标按钮到动作的映射
+        std::unordered_map<std::variant<SDL_Scancode,Uint32>, std::vector<std::string>> input_to_actions_map_; // 从输入到动作的映射
 
         std::unordered_map<std::string, ActionState> action_states_; // 存储每个动作的当前状态
 

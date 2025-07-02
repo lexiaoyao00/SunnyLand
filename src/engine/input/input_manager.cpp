@@ -91,8 +91,8 @@ void InputManager::processEvent(const SDL_Event &event)
         bool is_down = event.key.down;
         bool is_repeat = event.key.repeat;
 
-        auto it = scancode_to_actions_map_.find(scancode);
-        if (it != scancode_to_actions_map_.end()) {
+        auto it = input_to_actions_map_.find(scancode);
+        if (it != input_to_actions_map_.end()) {
             const std::vector<std::string>& associated_actions = it->second;
             for (const auto &action : associated_actions) {
                 updateActionStates(action, is_down, is_repeat);
@@ -104,8 +104,8 @@ void InputManager::processEvent(const SDL_Event &event)
     case SDL_EVENT_MOUSE_BUTTON_UP: {
         Uint32 mouse_button = event.button.button;
         bool is_mouse_down = event.button.down;
-        auto it = mouse_button_to_actions_map_.find(mouse_button);
-        if (it != mouse_button_to_actions_map_.end()) {
+        auto it = input_to_actions_map_.find(mouse_button);
+        if (it != input_to_actions_map_.end()) {
             const std::vector<std::string>& associated_actions = it->second;
             for (const auto &action : associated_actions) {
                 updateActionStates(action, is_mouse_down, false);
@@ -133,8 +133,7 @@ void InputManager::initializeMappings(const engine::core::Config *config)
         throw std::runtime_error("InputManager: Config is null");
     }
     actions_to_keyname_map_ = config->input_mappings_;
-    scancode_to_actions_map_.clear();
-    mouse_button_to_actions_map_.clear();
+    input_to_actions_map_.clear();
     action_states_.clear();
 
     // 如果配置中没有定义鼠标按钮动作，则添加默认映射， 用于 UI 事件
@@ -156,10 +155,10 @@ void InputManager::initializeMappings(const engine::core::Config *config)
             // more ...
 
             if (scancode != SDL_SCANCODE_UNKNOWN) {
-                scancode_to_actions_map_[scancode].push_back(action);
+                input_to_actions_map_[scancode].push_back(action);
                 spdlog::trace("InputManager: Added scancode mapping: {} -> {}", keyname, static_cast<int>(scancode));
             } else if (mouse_button != 0) {
-                mouse_button_to_actions_map_[mouse_button].push_back(action);
+                input_to_actions_map_[mouse_button].push_back(action);
                 spdlog::trace("InputManager: Added mouse button mapping: {} -> {}", keyname, static_cast<int>(mouse_button));
             } else {
                 spdlog::warn("InputManager: Unknown keyname: {} used for action: {}", keyname, action);
