@@ -4,6 +4,7 @@
 
 #include "time.h"
 #include "config.h"
+#include "../object/game_object.h"
 #include "../resource/resource_manager.h"
 #include "../render/camera.h"
 #include "../render/renderer.h"
@@ -59,6 +60,7 @@ bool GameApp::init() {
 
     is_running_ = true;
     spdlog::trace("GameApp::init() - Game app initialized successfully");
+    testGameObject();
     return true;
 }
 
@@ -286,6 +288,12 @@ void GameApp::testInputManager()
             spdlog::info("Action '{}' down", action);
         }
     }
+}
+
+void GameApp::testGameObject()
+{
+    engine::object::GameObject game_object("test_game_object");
+    game_object.addComponent<engine::component::Component>();
 }
 
 } // namespace engine::core
