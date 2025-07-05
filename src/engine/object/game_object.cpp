@@ -11,19 +11,19 @@ namespace engine::object {
         spdlog::trace("GameObject created: {} {}", name_, tag_);
     }
 
-    void GameObject::update(float delta_time)
+    void GameObject::update(float delta_time, engine::core::Context& context)
     {
         for (auto &component_pair : components_)
         {
-            component_pair.second->update(delta_time);
+            component_pair.second->update(delta_time,context);
         }
     }
 
-    void GameObject::render()
+    void GameObject::render(engine::core::Context& context)
     {
         for (auto &component_pair : components_)
         {
-            component_pair.second->render();
+            component_pair.second->render(context);
         }
     }
 
@@ -37,11 +37,11 @@ namespace engine::object {
         spdlog::trace("GameObject cleaned: {} {}", name_, tag_);
     }
 
-    void GameObject::handleInput()
+    void GameObject::handleInput(engine::core::Context& context)
     {
         for (auto &component_pair : components_)
         {
-            component_pair.second->handleInput();
+            component_pair.second->handleInput(context);
         }
     }
 } // namespace engine::object

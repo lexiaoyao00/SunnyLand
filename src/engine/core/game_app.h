@@ -20,6 +20,7 @@ namespace engine::input {
 namespace engine::core {
 class Time;
 class Config;
+class Context;
 
 class GameApp final {
 private:
@@ -34,6 +35,7 @@ private:
     std::unique_ptr<engine::render::Camera> camera_;
     std::unique_ptr<engine::core::Config> config_;
     std::unique_ptr<engine::input::InputManager> input_manager_;
+    std::unique_ptr<engine::core::Context> context_;
 
 public:
     GameApp();
@@ -62,6 +64,7 @@ private:
     [[nodiscard]] bool initRenderer();
     [[nodiscard]] bool initCamera();
     [[nodiscard]] bool initInputManager();
+    [[nodiscard]] bool initContext();
 
     // 测试用函数
     void testResourceManager();

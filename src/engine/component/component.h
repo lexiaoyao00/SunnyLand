@@ -5,6 +5,11 @@ namespace engine::object
     class GameObject;
 }
 
+namespace engine::core
+{
+    class Context;
+}
+
 namespace engine::component
 {
     class Component
@@ -29,9 +34,9 @@ namespace engine::component
 
     protected:
         virtual void init() {} // 保留两段初始化的机制, GameObject 添加组件时自动调用, 不需要外部调用
-        virtual void handleInput() {}
-        virtual void update(float) {}
-        virtual void render() {}
+        virtual void handleInput(engine::core::Context&) {}
+        virtual void update(float, engine::core::Context&) {}
+        virtual void render(engine::core::Context&) {}
         virtual void clean() {}
     };
 } // namespace engine::component

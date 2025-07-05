@@ -4,13 +4,19 @@
 
 #include "time.h"
 #include "config.h"
+#include "context.h"
 #include "../object/game_object.h"
 #include "../resource/resource_manager.h"
 #include "../render/camera.h"
 #include "../render/renderer.h"
 #include "../input/input_manager.h"
 
+#include "../component/transform_component.h"
+#include "../component/sprite_component.h"
+
 namespace engine::core{
+
+engine::object::GameObject game_object("test_game_object");
 
 GameApp::GameApp() {
     time_ = std::make_unique<Time>();
@@ -55,6 +61,8 @@ bool GameApp::init() {
     if (!initCamera()) return false;
     if (!initInputManager()) return false;
 
+    if (!initContext()) return false;
+
     // 测试代码
     testResourceManager();
 
@@ -85,6 +93,7 @@ void GameApp::render(){
 
     renderer_->clearScreen();
     testRenderer();
+    game_object.render(*context_);
     renderer_->present();
 }
 
@@ -228,6 +237,22 @@ bool GameApp::initInputManager()
 
 }
 
+bool GameApp::initContext()
+{
+    try
+    {
+        context_ = std::make_unique<engine::core::Context>(*input_manager_, *renderer_, *camera_, *resource_manager_);
+    }
+    catch(const std::exception& e)
+    {
+        spdlog::error("GameApp::initContext() - Failed to initialize Context: {}", e.what());
+        return false;
+    }
+
+    return true;
+
+}
+
 void GameApp::testResourceManager(){
     resource_manager_->getTexture("assets/textures/Actors/eagle-attack.png");
     resource_manager_->getFont("assets/fonts/VonwaonBitmap-16px.ttf", 16);
@@ -292,8 +317,10 @@ void GameApp::testInputManager()
 
 void GameApp::testGameObject()
 {
-    engine::object::GameObject game_object("test_game_object");
-    game_object.addComponent<engine::component::Component>();
+    game_object.addComponent<engine::component::TransformComponent>(glm::vec2(100, 100));
+    game_object.addComponent<engine::component::SpriteComponent>("assets/textures/Props/big-crate.png", *resource_manager_, engine::utils::Alignment::CENTER);
+    game_object.getComponent<engine::component::TransformComponent>()->setScale(glm::vec2(2,2));
+    game_object.getComponent<engine::component::TransformComponent>()->setRotation(30.0f);
 }
 
 } // namespace engine::core

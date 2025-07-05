@@ -22,11 +22,11 @@ public:
     // getters and setters
     const std::string& getTextureId() const {return texture_id_;}
     const std::optional<SDL_FRect>& getSourceRect() const {return source_rect_;}
-    bool getIsFlipped() const {return is_flipped_;}
+    bool isFlipped() const {return is_flipped_;}
 
     void setTextureId(const std::string& texture_id) {texture_id_ = texture_id;}
     void setSourceRect(const std::optional<SDL_FRect>& source_rect) {source_rect_ = source_rect;}
-    void setIsFlipped(bool is_flipped) {is_flipped_ = is_flipped;}
+    void setFlipped(bool is_flipped) {is_flipped_ = is_flipped;}
 
 };
 

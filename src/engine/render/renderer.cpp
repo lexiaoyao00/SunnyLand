@@ -48,7 +48,7 @@ void Renderer::drawSprite(const Camera &camera, const Sprite &sprite, const glm:
     // 如果目标矩形不在视口内,则不绘制
     if (!isRectInViewport(camera, dst_rect)) return;
 
-    if (!SDL_RenderTextureRotated(renderer_, texture, &src_rect.value(), &dst_rect, angle, nullptr, sprite.getIsFlipped() ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE)) {
+    if (!SDL_RenderTextureRotated(renderer_, texture, &src_rect.value(), &dst_rect, angle, nullptr, sprite.isFlipped() ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE)) {
         spdlog::error("drawSprite fail, SDL_RenderTexture fail, ID: {}", sprite.getTextureId());
     }
 
@@ -129,7 +129,7 @@ void Renderer::drawUISprite(const Sprite &sprite, const glm::vec2 &postion, cons
         dst_rect.h = src_rect.value().h;
     }
 
-    if (!SDL_RenderTextureRotated(renderer_, texture, &src_rect.value(), &dst_rect,0.0, nullptr, sprite.getIsFlipped() ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE)) {
+    if (!SDL_RenderTextureRotated(renderer_, texture, &src_rect.value(), &dst_rect,0.0, nullptr, sprite.isFlipped() ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE)) {
         spdlog::error("drawUISprite fail, SDL_RenderTexture fail, ID: {}", sprite.getTextureId());
     }
 }

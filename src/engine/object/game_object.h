@@ -81,10 +81,10 @@ public:
         }
     }
 
-    void update(float delta_time);
-    void render();
+    void update(float delta_time,engine::core::Context& context);
+    void render(engine::core::Context& context);
     void clean();
-    void handleInput();
+    void handleInput(engine::core::Context& context);
 };
 
 }   // namespace engine::object
