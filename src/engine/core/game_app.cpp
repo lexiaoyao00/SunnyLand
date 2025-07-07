@@ -14,6 +14,10 @@
 #include "../component/transform_component.h"
 #include "../component/sprite_component.h"
 
+#include "../scene/scene_manager.h"
+
+#include "../../game/scene/game_scene.h"
+
 namespace engine::core{
 
 engine::object::GameObject game_object("test_game_object");
@@ -62,13 +66,15 @@ bool GameApp::init() {
     if (!initInputManager()) return false;
 
     if (!initContext()) return false;
+    if (!initSceneManager()) return false;
+
 
     // 测试代码
-    testResourceManager();
+    auto scene = std::make_unique<game::scene::GameScene>("GameScene", *context_, *scene_manager_);
+    scene_manager_->requestPushScene(std::move(scene));
 
     is_running_ = true;
     spdlog::trace("GameApp::init() - Game app initialized successfully");
-    testGameObject();
     return true;
 }
 
@@ -80,25 +86,25 @@ void GameApp::handleEvents(){
         return;
     }
 
-    testInputManager(); // 测试代码
+    scene_manager_->handleInput();
 }
 
-void GameApp::update(float /* delta_time */){
+void GameApp::update(float delta_time){
     // TODO: Implement update logic
-    testCamera();
+    scene_manager_->update(delta_time);
 }
 
 void GameApp::render(){
     // TODO: Implement render logic
 
     renderer_->clearScreen();
-    testRenderer();
-    game_object.render(*context_);
+    scene_manager_->render();
     renderer_->present();
 }
 
 void GameApp::close(){
     spdlog::trace("GameApp::close() - Closing the game app ... ");
+    scene_manager_->close();
     if (sdl_renderer_ != nullptr){
         SDL_DestroyRenderer(sdl_renderer_);
         sdl_renderer_ = nullptr;
@@ -253,74 +259,20 @@ bool GameApp::initContext()
 
 }
 
-void GameApp::testResourceManager(){
-    resource_manager_->getTexture("assets/textures/Actors/eagle-attack.png");
-    resource_manager_->getFont("assets/fonts/VonwaonBitmap-16px.ttf", 16);
-    resource_manager_->getSound("assets/audio/button_click.wav");
-
-    resource_manager_->unloadTexture("assets/textures/Actors/eagle-attack.png");
-    resource_manager_->unloadFont("assets/fonts/VonwaonBitmap-16px.ttf", 16);
-    resource_manager_->unloadSound("assets/audio/button_click.wav");
-}
-
-void GameApp::testRenderer()
+bool GameApp::initSceneManager()
 {
-    engine::render::Sprite sprite_world("assets/textures/Actors/frog.png");
-    engine::render::Sprite sprite_ui("assets/textures/UI/buttons/Start1.png");
-    engine::render::Sprite sprite_parallax("assets/textures/Layers/back.png");
-
-    static float rotation = 0.0f;
-    rotation += 0.01f;
-
-    renderer_->drawParallax(*camera_, sprite_parallax, glm::vec2(100,100), glm::vec2(0.5f,0.5f), glm::bvec2(true,false));
-    renderer_->drawSprite(*camera_, sprite_world, glm::vec2(200,200), glm::vec2(1.0f,1.0f), rotation);
-    renderer_->drawUISprite(sprite_ui, glm::vec2(100,100));
-
-}
-
-void GameApp::testCamera()
-{
-    auto key_state = SDL_GetKeyboardState(nullptr);
-    if (key_state[SDL_SCANCODE_UP]) camera_->move(glm::vec2(0,-1));
-    if (key_state[SDL_SCANCODE_DOWN]) camera_->move(glm::vec2(0,1));
-    if (key_state[SDL_SCANCODE_LEFT]) camera_->move(glm::vec2(-1,0));
-    if (key_state[SDL_SCANCODE_RIGHT]) camera_->move(glm::vec2(1,0));
-}
-
-void GameApp::testInputManager()
-{
-    std::vector<std::string> actions = {
-        "move_up",
-        "move_down",
-        "move_left",
-        "move_right",
-        "attack",
-        "jump",
-        "pause",
-        "MouseLeftClick",
-        "MouseRightClick",
-    };
-
-    for (const auto& action : actions)
+    try
     {
-        if (input_manager_->isActionPressed(action)) {
-            spdlog::info("Action '{}' pressed", action);
-        }
-        if (input_manager_->isActionReleased(action)) {
-            spdlog::info("Action '{}' released", action);
-        }
-        if (input_manager_->isActionDown(action)) {
-            spdlog::info("Action '{}' down", action);
-        }
+        scene_manager_ = std::make_unique<engine::scene::SceneManager>(*context_);
     }
-}
+    catch(const std::exception& e)
+    {
+        spdlog::error("GameApp::initSceneManager() - Failed to initialize SceneManager: {}", e.what());
+        return false;
+    }
 
-void GameApp::testGameObject()
-{
-    game_object.addComponent<engine::component::TransformComponent>(glm::vec2(100, 100));
-    game_object.addComponent<engine::component::SpriteComponent>("assets/textures/Props/big-crate.png", *resource_manager_, engine::utils::Alignment::CENTER);
-    game_object.getComponent<engine::component::TransformComponent>()->setScale(glm::vec2(2,2));
-    game_object.getComponent<engine::component::TransformComponent>()->setRotation(30.0f);
+    spdlog::trace("SceneManager initialized successfully");
+    return true;
 }
 
 } // namespace engine::core

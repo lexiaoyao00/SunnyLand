@@ -44,6 +44,10 @@ add_executable(${TARGET} src/main.cpp
                         src/engine/object/game_object.cpp
                         src/engine/component/sprite_component.cpp
                         src/engine/component/transform_component.cpp
+                        src/engine/scene/scene.cpp
+                        src/engine/scene/scene_manager.cpp
+
+                        src/game/scene/game_scene.cpp
                         )
 
 # 链接库

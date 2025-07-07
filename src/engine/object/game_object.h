@@ -32,7 +32,7 @@ public:
     void setTag(const std::string& tag) { tag_ = tag; }
     const std::string& getTag() const { return tag_; }
     void setNeedRemove(bool need_remove) { need_remove_ = need_remove; }
-    bool getNeedRemove() const { return need_remove_; }
+    bool isNeedRemove() const { return need_remove_; }
 
     template<typename T, typename... Args>
     T* addComponent(Args&&... args) {
