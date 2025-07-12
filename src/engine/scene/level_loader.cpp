@@ -2,7 +2,9 @@
 #include "../object/game_object.h"
 #include "../component/transform_component.h"
 #include "../component/parallax_component.h"
+#include "../component/tilelayer_component.h"
 #include "../scene/scene.h"
+#include "../utils/math.h"
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
@@ -12,7 +14,6 @@
 namespace engine::scene {
     bool LevelLoader::loadLevel(const std::string &level_path, Scene *scene)
     {
-        map_path_ = level_path;
 
         std::ifstream file(level_path);
         if (!file.is_open()) {
@@ -29,6 +30,24 @@ namespace engine::scene {
         {
             spdlog::error("Failed to parse level file: {}, error: {}", level_path, e.what());
             return false;
+        }
+
+        map_path_ = level_path;
+        map_size_ = glm::ivec2(json_data.value("width", 0), json_data.value("height", 0));
+        tile_size_ = glm::ivec2(json_data.value("tilewidth", 0), json_data.value("tileheight", 0));
+
+        if (json_data.contains("tilesets") && json_data["tilesets"].is_array()) {
+            for (const auto& tileset_json : json_data["tilesets"]) {
+                if (!tileset_json.contains("source") || !tileset_json["source"].is_string() ||
+                !tileset_json.contains("firstgid") || !tileset_json["firstgid"].is_number_unsigned())
+                {
+                    spdlog::error("Invalid tilesets: missing 'source' or 'firstgid' attribute");
+                    continue;
+                }
+                auto tileset_path = resolvePath(tileset_json["source"].get<std::string>(), map_path_);
+                auto first_gid = tileset_json["firstgid"].get<int>();
+                loadTileset(tileset_path, first_gid);
+            }
         }
 
         if (!json_data.contains("layers") || !json_data["layers"].is_array()) {
@@ -65,7 +84,7 @@ namespace engine::scene {
             spdlog::error("Image layer {} without 'image' attribute", layer_json.value("name", "Unnamed"));
             return;
         }
-        auto texture_id = resolvePath(image_path);
+        auto texture_id = resolvePath(image_path,map_path_);
 
         const glm::vec2 offset = glm::vec2(layer_json.value("offsetx", 0.0f), layer_json.value("offsety", 0.0f));
         const glm::vec2 strcoll_factor = glm::vec2(layer_json.value("parallaxx", 1.0f), layer_json.value("parallaxy", 1.0f));
@@ -73,7 +92,7 @@ namespace engine::scene {
 
         const std::string& layer_name = layer_json.value("name", "Unnamed");
 
-        // TODO: more attributes
+        // more attributes...
 
         auto game_object = std::make_unique<engine::object::GameObject>(layer_name);
         game_object->addComponent<engine::component::TransformComponent>(offset);
@@ -83,9 +102,29 @@ namespace engine::scene {
         spdlog::info("Loaded image layer: {}", layer_name);
     }
 
-    void LevelLoader::loadTileLayer(const nlohmann::json &, Scene *)
+    void LevelLoader::loadTileLayer(const nlohmann::json &layer_json, Scene *scene)
     {
-        // TODO:
+        if (!layer_json.contains("data") || !layer_json["data"].is_array())
+        {
+            spdlog::error("Tile layer {} missing 'data' attribute", layer_json.value("name", "Unnamed"));
+            return;
+        }
+
+        std::vector<engine::component::TileInfo> tiles;
+        tiles.reserve(map_size_.x * map_size_.y);
+
+        const auto& data = layer_json["data"];
+
+        for (const auto& gid : data) {
+            tiles.emplace_back(getTileInfoBtGid(gid));
+        }
+
+        const std::string& layer_name = layer_json.value("name", "Unnamed");
+        auto game_object = std::make_unique<engine::object::GameObject>(layer_name);
+        game_object->addComponent<engine::component::TileLayerComponent>(tile_size_, map_size_, std::move(tiles));
+
+        scene->addGameObject(std::move(game_object));
+        spdlog::info("Loaded tile layer: {}", layer_name);
     }
 
     void LevelLoader::loadObjectGroup(const nlohmann::json &, Scene *)
@@ -93,22 +132,124 @@ namespace engine::scene {
         // TODO:
     }
 
-    std::string LevelLoader::resolvePath(std::string image_path)
+    engine::component::TileInfo LevelLoader::getTileInfoBtGid(int gid)
+    {
+        if (gid == 0)
+        {
+            return engine::component::TileInfo();
+        }
+
+        // upper_bound: 查找 tileset_data_ 中键大于 gid 的第一个元素，返回一个迭代器
+        auto tileset_it = tilesets_data_.upper_bound(gid);
+        if (tileset_it == tilesets_data_.begin())
+        {
+            spdlog::error("Tile gid {} not found in any tileset", gid);
+            return engine::component::TileInfo();
+        }
+        --tileset_it;       // 前移一个位置，这样就得到不大于gid的最近的一个元素(我们需要的那个元素)
+
+        const auto& tileset = tileset_it->second;
+        auto local_id = gid - tileset_it->first;
+        const std::string file_path = tileset.value("file_path", "");   // 获取图块集文件路径，在 loadTileset 时添加的
+        if (file_path.empty()) {
+            spdlog::error("Tileset file {} missing 'file_path' attribute", tileset_it->first);
+            return engine::component::TileInfo();
+        }
+
+        if (tileset.contains("image"))  // 单一图片的情况（基于整张图块集图片）
+        {
+            auto texture_id = resolvePath(tileset["image"].get<std::string>(), file_path);
+
+            // 计算瓦片在图片网格中的坐标
+            auto coordinate_x = local_id % tileset["columns"].get<int>();
+            auto coordinate_y = local_id / tileset["columns"].get<int>();
+
+            SDL_FRect texture_rect = {
+                static_cast<float>(coordinate_x * tile_size_.x),
+                static_cast<float>(coordinate_y * tile_size_.y),
+                static_cast<float>(tile_size_.x),
+                static_cast<float>(tile_size_.y)
+            };
+            engine::render::Sprite sprite{texture_id, texture_rect};
+            return engine::component::TileInfo(sprite,engine::component::TileType::NORMAL); // TODO: 目前只做渲染,后续需要添加碰撞体等
+        } else // 多图片的情况（多图片集合）
+        {
+            if (!tileset.contains("tiles"))
+            {
+                spdlog::error("Tileset {} missing 'tiles' attribute", tileset_it->first);
+                return engine::component::TileInfo();
+            }
+
+            const auto& tiles_json = tileset["tiles"];
+            for (const auto& tile_json : tiles_json)
+            {
+                auto tile_id = tile_json.value("id",0);
+                if (tile_id == local_id)
+                {
+                    if (!tile_json.contains("image"))
+                    {
+                        spdlog::error("Tileset {} Tile {} missing 'image' attribute",tileset_it->first, tile_id);
+                        return engine::component::TileInfo();
+                    }
+
+                    auto texture_id = resolvePath(tile_json["image"].get<std::string>(), file_path);
+                    auto image_width = tile_json.value("imagewidth",0);
+                    auto image_height = tile_json.value("imageheight",0);
+
+                    SDL_FRect texture_rect = {
+                        static_cast<float>(tile_json.value("x",0)),
+                        static_cast<float>(tile_json.value("y",0)),
+                        static_cast<float>(tile_json.value("width", image_width)),
+                        static_cast<float>(tile_json.value("height", image_height))
+                    };
+                    engine::render::Sprite sprite{texture_id, texture_rect};
+                    return engine::component::TileInfo(sprite,engine::component::TileType::NORMAL); // TODO: 目前只做渲染,后续需要添加碰撞体等
+                }
+            }
+        }
+
+        spdlog::error("Tile gid {} not found in tileset {}", gid, tileset_it->first);
+        return engine::component::TileInfo();
+    }
+
+    void LevelLoader::loadTileset(const std::string &tileset_path, int first_gid)
+    {
+        std::ifstream tileset_file(tileset_path);
+        if (!tileset_file.is_open()) {
+            spdlog::error("Failed to open tileset file: {}", tileset_path);
+            return;
+        }
+
+        nlohmann::json tileset_json;
+        try
+        {
+            tileset_file >> tileset_json;
+        }
+        catch(const nlohmann::json::parse_error& e)
+        {
+            spdlog::error("Failed to parse tileset file: {}, error: {}(at byte {})", tileset_path, e.what(), e.byte);
+            return;
+        }
+        tileset_json["file_path"] = tileset_path;       // 将文件路径存储到json中，后续解析图片路径时需要
+        tilesets_data_[first_gid] = std::move(tileset_json);
+        spdlog::info("Loaded tileset: {}, first gid: {}", tileset_path, first_gid);
+
+    }
+
+    std::string LevelLoader::resolvePath(const std::string &relative_path, const std::string &file_path)
     {
         try
         {
-            auto map_dir = std::filesystem::path(map_path_).parent_path();
+            auto map_dir = std::filesystem::path(file_path).parent_path();
             // std::filesystem::canonical 解析路径中的当前目录(.)和上级目录(..)导航符,得到一个干净的路径
-            auto final_path = std::filesystem::canonical(map_dir / image_path);
+            auto final_path = std::filesystem::canonical(map_dir / relative_path);
             return final_path.string();
         }
         catch(const std::exception& e)
         {
-            spdlog::error("Failed to resolve path: {}, error: {}", image_path, e.what());
-            return image_path;
+            spdlog::error("Failed to resolve path error: {}", e.what());
+            return relative_path;
         }
-
-
     }
 
 }   // namespace engine::scene
