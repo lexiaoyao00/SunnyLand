@@ -22,7 +22,9 @@ namespace game::scene {
         void clean() override;
 
     private:
-        void createTestObject();    // 测试函数
+        // 测试函数
+        void createTestObject();
+        void testCamera();
     };
 
 
