@@ -1,9 +1,11 @@
 #include "level_loader.h"
 #include "../object/game_object.h"
+#include "../component/sprite_component.h"
 #include "../component/transform_component.h"
 #include "../component/parallax_component.h"
 #include "../component/tilelayer_component.h"
 #include "../scene/scene.h"
+#include "../core/context.h"
 #include "../utils/math.h"
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
@@ -127,9 +129,55 @@ namespace engine::scene {
         spdlog::info("Loaded tile layer: {}", layer_name);
     }
 
-    void LevelLoader::loadObjectGroup(const nlohmann::json &, Scene *)
+    void LevelLoader::loadObjectGroup(const nlohmann::json& layer_json, Scene* scene)
     {
-        // TODO:
+        if(!layer_json.contains("objects") || !layer_json["objects"].is_array())
+        {
+            spdlog::error("Object group {} missing 'objects' attribute", layer_json.value("name", "Unnamed"));
+            return;
+        }
+
+        const auto& objects = layer_json["objects"];
+        for (const auto& object_json : objects)
+        {
+            auto gid = object_json.value("gid", 0);
+            if (gid == 0)
+            {
+                // TODO: 自己绘制的形状，碰撞盒，触发器等，未来开发
+            }
+            else
+            {
+                auto tile_info = getTileInfoBtGid(gid);
+                if (tile_info.sprite.getTextureId().empty())
+                {
+                    spdlog::error("Object gid {} not found in any tileset", gid);
+                    continue;
+                }
+
+                auto position = glm::vec2(object_json.value("x", 0.0f), object_json.value("y", 0.0f));
+                auto dst_size = glm::vec2(object_json.value("width", 0.0f), object_json.value("height", 0.0f));
+                position = glm::vec2(position.x,position.y - dst_size.y); // 实际位置从左下角到左上角
+
+                auto rotation = object_json.value("rotation", 0.0f);
+                auto src_size_opt = tile_info.sprite.getSourceRect();
+                if (!src_size_opt)
+                {
+                    spdlog::error("Object gid {} missing 'src_size' attribute", gid);
+                    continue;
+                }
+                auto src_size = glm::vec2(src_size_opt->w, src_size_opt->h);
+                auto scale = dst_size / src_size;
+
+                const std::string& object_name = object_json.value("name", "Unnamed");
+
+                auto game_object = std::make_unique<engine::object::GameObject>(object_name);
+                game_object->addComponent<engine::component::TransformComponent>(position, scale, rotation);
+                game_object->addComponent<engine::component::SpriteComponent>(std::move(tile_info.sprite),scene->getContext().getResourceManager());
+
+                scene->addGameObject(std::move(game_object));
+                spdlog::info("Loaded object: {}", object_name);
+            }
+        }
     }
 
     engine::component::TileInfo LevelLoader::getTileInfoBtGid(int gid)

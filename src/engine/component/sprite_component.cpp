@@ -27,6 +27,16 @@ SpriteComponent::SpriteComponent(
     spdlog::trace("SpriteComponent::SpriteComponent: created, texture_id = {}", texture_id);
 }
 
+SpriteComponent::SpriteComponent(engine::render::Sprite &&sprite, engine::resource::ResourceManager &resource_manager, engine::utils::Alignment alignment)
+: resource_manager_(&resource_manager), sprite_(std::move(sprite)), alignment_(alignment)
+{
+    if (!resource_manager_)
+    {
+        spdlog::critical("SpriteComponent::SpriteComponent: resource_manager_ is null, this may cause undefined behavior");
+    }
+
+    spdlog::trace("SpriteComponent::SpriteComponent: created, texture_id = {}", sprite_.getTextureId());
+}
 
 void SpriteComponent::updateOffset()
 {

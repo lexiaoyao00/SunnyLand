@@ -39,6 +39,12 @@ namespace engine::component {
             std::optional<SDL_FRect> source_rect_opt = std::nullopt,
             bool is_flipped = false
         );
+
+        SpriteComponent(
+            engine::render::Sprite&& sprite,
+            engine::resource::ResourceManager& resource_manager,
+            engine::utils::Alignment alignment = engine::utils::Alignment::NONE
+        );
         ~SpriteComponent() override = default;
 
         SpriteComponent(const SpriteComponent&) = delete;
