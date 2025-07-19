@@ -2,6 +2,7 @@
 #include "scene_manager.h"
 #include "../core/context.h"
 #include "../object/game_object.h"
+#include "../physics/physics_engine.h"
 #include <spdlog/spdlog.h>
 
 namespace engine::scene {
@@ -24,6 +25,8 @@ void Scene::init()
 void Scene::update(float delta_time)
 {
     if (!is_initialized_) return;
+
+    context_.getPhysicsEngine().update(delta_time);
 
     for (auto it = game_objects_.begin(); it != game_objects_.end();)
     {

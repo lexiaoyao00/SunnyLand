@@ -62,6 +62,7 @@ public:
         if (auto it = components_.find(type_index); it != components_.end()) {
             return static_cast<T*>(it->second.get());
         }
+        spdlog::error("GameObject::getComponent: component {} not found in game object {}", typeid(T).name(), name_);
         return nullptr;
     }
 

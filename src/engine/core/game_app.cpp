@@ -16,6 +16,8 @@
 
 #include "../scene/scene_manager.h"
 
+#include "../physics/physics_engine.h"
+
 #include "../../game/scene/game_scene.h"
 
 namespace engine::core{
@@ -64,6 +66,7 @@ bool GameApp::init() {
     if (!initRenderer()) return false;
     if (!initCamera()) return false;
     if (!initInputManager()) return false;
+    if (!initPhysicsEngine()) return false;
 
     if (!initContext()) return false;
     if (!initSceneManager()) return false;
@@ -104,7 +107,12 @@ void GameApp::render(){
 
 void GameApp::close(){
     spdlog::trace("GameApp::close() - Closing the game app ... ");
+    // 先关闭场景管理器，确保所有场景都被清理
     scene_manager_->close();
+
+    // 为了确保正确的销毁顺序，有些智能指针对象也需要手动管理
+    resource_manager_.reset();
+
     if (sdl_renderer_ != nullptr){
         SDL_DestroyRenderer(sdl_renderer_);
         sdl_renderer_ = nullptr;
@@ -243,11 +251,27 @@ bool GameApp::initInputManager()
 
 }
 
+bool GameApp::initPhysicsEngine()
+{
+    try
+    {
+        physics_engine_ = std::make_unique<engine::physics::PhysicsEngine>();
+    }
+    catch(const std::exception& e)
+    {
+        spdlog::error("GameApp::initPhysicsEngine() - Failed to initialize PhysicsEngine: {}", e.what());
+        return false;
+    }
+
+    spdlog::trace("PhysicsEngine initialized successfully");
+    return true;
+}
+
 bool GameApp::initContext()
 {
     try
     {
-        context_ = std::make_unique<engine::core::Context>(*input_manager_, *renderer_, *camera_, *resource_manager_);
+        context_ = std::make_unique<engine::core::Context>(*input_manager_, *renderer_, *camera_, *resource_manager_, *physics_engine_);
     }
     catch(const std::exception& e)
     {

@@ -16,6 +16,11 @@ namespace engine::resource
     class ResourceManager;
 } // namespace engine::resource
 
+namespace engine::physics
+{
+    class PhysicsEngine;
+}
+
 namespace engine::core
 {
 
@@ -27,13 +32,16 @@ namespace engine::core
         engine::render::Renderer &renderer_;
         engine::render::Camera &camera_;
         engine::resource::ResourceManager &resource_manager_;
+        engine::physics::PhysicsEngine &physics_engine_;
+
 
     public:
         Context(
             engine::input::InputManager &input_manager,
             engine::render::Renderer &renderer,
             engine::render::Camera &camera,
-            engine::resource::ResourceManager &resource_manager);
+            engine::resource::ResourceManager &resource_manager,
+            engine::physics::PhysicsEngine &physics_engine);
 
         Context(const Context &) = delete;
         Context &operator=(const Context &) = delete;
@@ -45,5 +53,6 @@ namespace engine::core
         engine::render::Renderer &getRenderer() const { return renderer_; }
         engine::render::Camera &getCamera() const { return camera_; }
         engine::resource::ResourceManager &getResourceManager() const { return resource_manager_; }
+        engine::physics::PhysicsEngine &getPhysicsEngine() const { return physics_engine_; }
     };
 } // namespace engine::core

@@ -2,6 +2,7 @@
 #include "../../engine/object/game_object.h"
 #include "../../engine/component/transform_component.h"
 #include "../../engine/component/sprite_component.h"
+#include "../../engine/component/physics_component.h"
 #include "../../engine/core/context.h"
 #include "../../engine/scene/level_loader.h"
 #include "../../engine/input/input_manager.h"
@@ -44,7 +45,8 @@ void GameScene::handleInput()
 {
     // TODO:
     Scene::handleInput();
-    testCamera();
+    // testCamera();
+    testObject();
 }
 
 void GameScene::clean()
@@ -58,9 +60,11 @@ void GameScene::createTestObject()
 {
     spdlog::trace("Creating test object");
     auto test_object = std::make_unique<engine::object::GameObject>("test_object");
+    test_object_ = test_object.get();
 
     test_object->addComponent<engine::component::TransformComponent>(glm::vec2(100.0f,100.0f));
     test_object->addComponent<engine::component::SpriteComponent>("assets/textures/Props/big-crate.png", context_.getResourceManager());
+    test_object->addComponent<engine::component::PhysicsComponent>(&context_.getPhysicsEngine());
 
     addGameObject(std::move(test_object));
     spdlog::trace("Test object has been created in GameScene");
@@ -73,5 +77,23 @@ void GameScene::testCamera()
     if (input_manager.isActionDown("move_down")) camera.move(glm::vec2(0.0f, 1.0f));
     if (input_manager.isActionDown("move_left")) camera.move(glm::vec2(-1.0f, 0.0f));
     if (input_manager.isActionDown("move_right")) camera.move(glm::vec2(1.0f, 0.0f));
+}
+void GameScene::testObject()
+{
+    if (!test_object_) return;
+    auto& input_manager = context_.getInputManager();
+
+    if (input_manager.isActionDown("move_left")){
+        test_object_->getComponent<engine::component::TransformComponent>()->translate(glm::vec2(-1,0));
+    }
+
+    if (input_manager.isActionDown("move_right")){
+        test_object_->getComponent<engine::component::TransformComponent>()->translate(glm::vec2(1,0));
+    }
+
+    if (input_manager.isActionDown("jump")){
+        test_object_->getComponent<engine::component::PhysicsComponent>()->setVelocity(glm::vec2(0, -200));
+    }
+
 }
 }
