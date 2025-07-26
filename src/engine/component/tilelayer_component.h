@@ -12,6 +12,10 @@ namespace engine::core {
     class Context;
 }
 
+namespace engine::physics {
+    class PhysicsEngine;
+}
+
 namespace engine::component {
 
 enum class TileType {
@@ -40,6 +44,7 @@ private:
     glm::vec2 offset_ = {0.0f, 0.0f};  // 瓦片层在世界中的偏移量
 
     bool is_hidden_ = false;  // 是否隐藏瓦片层
+    engine::physics::PhysicsEngine* physics_engine_ = nullptr;  // 物理引擎指针, clean() 函数中可能需要反注册
 
 public:
     TileLayerComponent() = default;
@@ -60,11 +65,13 @@ public:
     // setters
     void setOffset(const glm::vec2& offset) { offset_ = offset; }
     void setHidden(bool hidden) { is_hidden_ = hidden; }
+    void setPhysicsEngine(engine::physics::PhysicsEngine* physics_engine) { physics_engine_ = physics_engine; }
 
 protected:
     void init() override;
     void update(float,engine::core::Context&) override {}
     void render(engine::core::Context& context) override;
+    void clean() override;
 };
 
 

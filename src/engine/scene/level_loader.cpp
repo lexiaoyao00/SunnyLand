@@ -180,6 +180,34 @@ namespace engine::scene {
         }
     }
 
+    engine::component::TileType LevelLoader::getTileType(const nlohmann::json &tile_json)
+    {
+        if (tile_json.contains("properties")) {
+            auto& properties = tile_json["properties"];
+            for (const auto& property : properties) {
+                if (property.contains("name") && property["name"] == "solid") {
+                    bool is_solid = property.value("value", false);
+                    return is_solid ? engine::component::TileType::SOLID : engine::component::TileType::NORMAL;
+                }
+                // TODO: 当前只支持 solid 属性，未来支持更多属性
+            }
+        }
+        return engine::component::TileType::NORMAL;
+    }
+
+    engine::component::TileType LevelLoader::getTileTypeById(const nlohmann::json &tile_json, int local_id)
+    {
+        if (tile_json.contains("tiles")) {
+            auto& tiles = tile_json["tiles"];
+            for (auto& tile : tiles ){
+                if (tile.contains("id") && tile["id"] == local_id) {
+                    return getTileType(tile);
+                }
+            }
+        }
+        return engine::component::TileType::NORMAL;
+    }
+
     engine::component::TileInfo LevelLoader::getTileInfoBtGid(int gid)
     {
         if (gid == 0)
@@ -219,7 +247,8 @@ namespace engine::scene {
                 static_cast<float>(tile_size_.y)
             };
             engine::render::Sprite sprite{texture_id, texture_rect};
-            return engine::component::TileInfo(sprite,engine::component::TileType::NORMAL); // TODO: 目前只做渲染,后续需要添加碰撞体等
+            auto tile_type = getTileTypeById(tileset, local_id);
+            return engine::component::TileInfo(sprite,tile_type);
         } else // 多图片的情况（多图片集合）
         {
             if (!tileset.contains("tiles"))
@@ -251,7 +280,8 @@ namespace engine::scene {
                         static_cast<float>(tile_json.value("height", image_height))
                     };
                     engine::render::Sprite sprite{texture_id, texture_rect};
-                    return engine::component::TileInfo(sprite,engine::component::TileType::NORMAL); // TODO: 目前只做渲染,后续需要添加碰撞体等
+                    auto tile_type = getTileType(tile_json);
+                    return engine::component::TileInfo(sprite, tile_type);
                 }
             }
         }

@@ -4,6 +4,7 @@
 
 namespace engine::component {
     class PhysicsComponent;
+    class TileLayerComponent;
 }
 
 namespace engine::object {
@@ -14,7 +15,8 @@ namespace engine::physics {
 
 class PhysicsEngine {
 private:
-    std::vector<component::PhysicsComponent*> components_;    // 注册过的物理组件容器，非拥有指针
+    std::vector<engine::component::PhysicsComponent*> components_;    // 注册过的物理组件容器，非拥有指针
+    std::vector<engine::component::TileLayerComponent*> collision_tile_layers_;     // 注册过的 碰撞瓦片图层 容器
     glm::vec2 gravity_ = {0.0f, 980.0f};    // 默认重力值(像素/秒^2,相当于100像素对应于1米)
     float max_speed_ = 500.0f;    // 最大速度(像素/秒)
 
@@ -31,8 +33,13 @@ public:
     void registerComponent(component::PhysicsComponent* component);
     void unregisterComponent(component::PhysicsComponent* component);
 
+    // 如果瓦片层需要进行碰撞检测则注册，不需要则不注册
+    void registerCollisionTileLayer(component::TileLayerComponent* tile_layer);
+    void unregisterCollisionTileLayer(component::TileLayerComponent* tile_layer);
+
     void update(float delta_time);
     void checkObjectCollision();
+    void resolveTileCollision(engine::component::PhysicsComponent* pc, float delta_time);   // 检测并处理游戏对象和瓦片层之间的碰撞
 
     void setGravity(const glm::vec2& gravity) { gravity_ = gravity; }
     const glm::vec2& getGravity() const { return gravity_; }

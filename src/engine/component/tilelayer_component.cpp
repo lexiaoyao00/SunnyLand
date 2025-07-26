@@ -2,6 +2,7 @@
 #include "../core/context.h"
 #include "../render/renderer.h"
 #include "../render/camera.h"
+#include "../physics/physics_engine.h"
 #include <spdlog/spdlog.h>
 #include <glm/glm.hpp>
 
@@ -22,7 +23,7 @@ namespace engine::component {
     {
         if (pos.x < 0 || pos.x >= map_size_.x || pos.y < 0 || pos.y >= map_size_.y)
         {
-            spdlog::warn("TileLayerComponent: positioni out of range: ({}, {})", pos.x, pos.y);
+            spdlog::warn("TileLayerComponent: position out of range: ({}, {})", pos.x, pos.y);
             return nullptr;
         }
 
@@ -94,5 +95,11 @@ namespace engine::component {
         }
     }
 
-
+    void TileLayerComponent::clean()
+    {
+        if (physics_engine_)
+        {
+            physics_engine_->unregisterCollisionTileLayer(this);
+        }
+    }
 }

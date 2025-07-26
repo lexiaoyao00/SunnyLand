@@ -6,6 +6,7 @@
 
 namespace engine::component {
     struct TileInfo;
+    enum class TileType;
 }
 
 namespace engine::scene {
@@ -26,6 +27,29 @@ private:
     void loadTileLayer(const nlohmann::json& layer_json, Scene* scene);    // 加载瓦片层
     void loadObjectGroup(const nlohmann::json& layer_json, Scene* scene);  // 加载对象层
 
+    /**
+     * @brief 根据瓦片json对象获取瓦片类型
+     *
+     * @param tile_json 瓦片json数据
+     * @return engine::component::TileType 瓦片类型
+     */
+    engine::component::TileType getTileType(const nlohmann::json& tile_json);
+
+    /**
+     * @brief 根据（单一图片）图块集中的 id 获取瓦片类型
+     *
+     * @param tile_json 图块集json数据
+     * @param local_id 图块集中的 id
+     * @return engine::component::TileType 瓦片类型
+     */
+    engine::component::TileType getTileTypeById(const nlohmann::json& tile_json, int local_id);
+
+    /**
+     * @brief 根据全局 id 获取瓦片信息
+     *
+     * @param gid 全局 id
+     * @return engine::component::TileInfo 瓦片信息
+     */
     engine::component::TileInfo getTileInfoBtGid(int gid);
 
     void loadTileset(const std::string& tileset_path, int first_gid);
