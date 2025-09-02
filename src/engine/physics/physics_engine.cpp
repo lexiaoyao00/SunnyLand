@@ -84,9 +84,20 @@ namespace engine::physics {
                 auto* cc_b = obj_b->getComponent<engine::component::ColliderComponent>();
                 if (!cc_b || !cc_b->isActive()) continue;
 
-                if (collision::checkCollision(*cc_a, *cc_b))
-                {   // TODO:不是所有碰撞都需要插入 collision_pairs_ ，比如穿透，未来添加过滤条件
-                    collision_pairs_.emplace_back(obj_a, obj_b);
+                if (collision::checkCollision(*cc_a, *cc_b)) {
+                    // 如果是可移动物体与SOLID物体碰撞，则直接处理位置变化，不用记录碰撞对
+                    if (obj_a->getTag() != "solid" && obj_b->getTag() == "solid")
+                    {
+                        resolveSolidObjectCollision(obj_a, obj_b);
+                    }
+                    else if (obj_a->getTag() == "solid" && obj_b->getTag() != "solid")
+                    {
+                        resolveSolidObjectCollision(obj_b, obj_a);
+                    }
+                    else
+                    {
+                        collision_pairs_.emplace_back(obj_a, obj_b);
+                    }
                 }
             }
         }
@@ -176,8 +187,45 @@ namespace engine::physics {
         }
         // 更新对象位置，并限制最大速度
 
-        tc->setPosition(new_obj_pos);
+        tc->translate(new_obj_pos - obj_pos); // 使用 translate 方法，避免直接设置位置，因为碰撞盒可能有偏移量
         pc->velocity_ = glm::clamp(pc->velocity_, -max_speed_, max_speed_);
+    }
+
+    void PhysicsEngine::resolveSolidObjectCollision(engine::object::GameObject *move_obj, engine::object::GameObject *solid_obj)
+    {
+        auto* move_tc = move_obj->getComponent<engine::component::TransformComponent>();
+        auto* move_pc = move_obj->getComponent<engine::component::PhysicsComponent>();
+        auto* move_cc = move_obj->getComponent<engine::component::ColliderComponent>();
+        auto* solid_cc = solid_obj->getComponent<engine::component::ColliderComponent>();
+
+        // 这里只获取期望位置，无法获取当前帧初始位置，无法进行轴分离碰撞检测
+        auto move_aabb = move_cc->getWorldAABB();
+        auto solid_aabb = solid_cc->getWorldAABB();
+
+        // 使用最小平移向量解决碰撞问题
+        auto move_center = move_aabb.position + move_aabb.size / 2.0f;
+        auto solid_center = solid_aabb.position + solid_aabb.size / 2.0f;
+        auto overlap = glm::vec2(move_aabb.size/2.0f + solid_aabb.size/2.0f) - glm::abs(move_center - solid_center);
+        if (overlap.x < 0.1f && overlap.y < 0.1f) return; // 重叠部分太小，则认为没有碰撞
+
+        if (overlap.x < overlap.y) { // X轴重叠更多，优先解决X轴碰撞
+            if (move_center.x < solid_center.x) {
+                move_tc->translate(glm::vec2(-overlap.x, 0.0f));
+                if (move_pc->velocity_.x > 0.0f) move_pc->velocity_.x = 0.0f;
+            } else { //
+                move_tc->translate(glm::vec2(overlap.x, 0.0f));
+                if (move_pc->velocity_.x < 0.0f) move_pc->velocity_.x = 0.0f;
+            }
+        } else { // Y轴重叠更多，优先解决Y轴碰撞
+            if (move_center.y < solid_center.y) {
+                move_tc->translate(glm::vec2(0.0f, -overlap.y));
+                if (move_pc->velocity_.y > 0.0f) move_pc->velocity_.y = 0.0f;
+            }
+            else {
+                move_tc->translate(glm::vec2(0.0f, overlap.y));
+                if (move_pc->velocity_.y < 0.0f) move_pc->velocity_.y = 0.0f;
+            }
+        }
     }
 
 }   // namespace engine::physics

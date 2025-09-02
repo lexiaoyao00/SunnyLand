@@ -4,6 +4,9 @@
 #include "../component/transform_component.h"
 #include "../component/parallax_component.h"
 #include "../component/tilelayer_component.h"
+#include "../component/collider_component.h"
+#include "../component/physics_component.h"
+#include "../physics/collider.h"
 #include "../scene/scene.h"
 #include "../core/context.h"
 #include "../utils/math.h"
@@ -174,10 +177,59 @@ namespace engine::scene {
                 game_object->addComponent<engine::component::TransformComponent>(position, scale, rotation);
                 game_object->addComponent<engine::component::SpriteComponent>(std::move(tile_info.sprite),scene->getContext().getResourceManager());
 
+                auto tile_json = getTileJsonByGid(gid);
+
+                // 获取碰撞盒信息
+                if (tile_info.type == engine::component::TileType::SOLID){  // 图集瓦片碰撞标签
+                    auto collider = std::make_unique<engine::physics::AABBCollider>(src_size);
+                    game_object->addComponent<engine::component::ColliderComponent>(std::move(collider));
+                    game_object->addComponent<engine::component::PhysicsComponent>(&scene->getContext().getPhysicsEngine(),false);
+                    game_object->setTag("solid");
+                } else if (auto rect = getColliderRect(tile_json); rect){ // 对象瓦片自定义碰撞盒
+                    auto collider = std::make_unique<engine::physics::AABBCollider>(rect->size);
+                    auto* cc = game_object->addComponent<engine::component::ColliderComponent>(std::move(collider));
+                    cc->setOffset(rect->position);  // 自定义碰撞盒的坐标是相对于图片坐标。
+                    game_object->addComponent<engine::component::PhysicsComponent>(&scene->getContext().getPhysicsEngine(),false);
+                }
+
+                // 获取标签信息
+                auto tag = getTileProperty<std::string>(tile_json, "tag");
+                if (tag){
+                    game_object->setTag(tag.value());
+                }
+
+                // 获取重力信息
+                auto gravity = getTileProperty<bool>(tile_json, "gravity");
+                if (gravity){
+                    auto pc = game_object->getComponent<engine::component::PhysicsComponent>();
+                    if (pc) {
+                        pc->setUseGravity(gravity.value());
+                    } else {
+                        spdlog::warn("Object {} has gravity property but no physics component", object_name);
+                        game_object->addComponent<engine::component::PhysicsComponent>(&scene->getContext().getPhysicsEngine(),false);
+                    }
+                }
+
+
                 scene->addGameObject(std::move(game_object));
                 spdlog::info("Loaded object: {}", object_name);
             }
         }
+    }
+
+    std::optional<engine::utils::Rect> LevelLoader::getColliderRect(const nlohmann::json &tile_json)
+    {
+        if (!tile_json.contains("objectgroup")) return std::nullopt;
+        auto& objectgroup = tile_json["objectgroup"];
+        if (!objectgroup.contains("objects")) return std::nullopt;
+        auto& objects = objectgroup["objects"];
+        for (const auto& object : objects) {    // 返回第一个不为空的碰撞矩形
+            auto rect = engine::utils::Rect(glm::vec2(object.value("x",0.0f),object.value("y",0.0f)),glm::vec2(object.value("width",0.0f),object.value("height",0.0f)));
+            if (rect.size.x > 0 && rect.size.y > 0) {
+                return rect;
+            }
+        }
+        return std::nullopt;
     }
 
     engine::component::TileType LevelLoader::getTileType(const nlohmann::json &tile_json)
@@ -288,6 +340,34 @@ namespace engine::scene {
 
         spdlog::error("Tile gid {} not found in tileset {}", gid, tileset_it->first);
         return engine::component::TileInfo();
+    }
+
+    std::optional<nlohmann::json> LevelLoader::getTileJsonByGid(int gid) const
+    {
+        auto tileset_it = tilesets_data_.upper_bound(gid);
+        if (tileset_it == tilesets_data_.begin()){
+            spdlog::error("Tile gid {} not found in any tileset", gid);
+            return std::nullopt;
+        }
+        --tileset_it;
+
+        const auto& tileset = tileset_it->second;
+        auto local_id = gid - tileset_it->first;
+        if (!tileset.contains("tiles")){
+            spdlog::error("Tileset {} missing 'tiles' attribute", tileset_it->first);
+            return std::nullopt;
+        }
+
+        const auto& tiles_josn = tileset["tiles"];
+        for (const auto& tile_json : tiles_josn){
+            auto tile_id = tile_json.value("id",0);
+            if (tile_id == local_id){
+                return tile_json;
+            }
+        }
+
+        return std::nullopt;
+
     }
 
     void LevelLoader::loadTileset(const std::string &tileset_path, int first_gid)

@@ -38,8 +38,6 @@ public:
     void unregisterCollisionTileLayer(component::TileLayerComponent* tile_layer);
 
     void update(float delta_time);
-    void checkObjectCollision();
-    void resolveTileCollision(engine::component::PhysicsComponent* pc, float delta_time);   // 检测并处理游戏对象和瓦片层之间的碰撞
 
     void setGravity(const glm::vec2& gravity) { gravity_ = gravity; }
     const glm::vec2& getGravity() const { return gravity_; }
@@ -48,6 +46,11 @@ public:
     const std::vector<std::pair<engine::object::GameObject*, engine::object::GameObject*>>& getCollisionPairs() const {
         return collision_pairs_;
     }
+
+private:
+    void checkObjectCollision();
+    void resolveTileCollision(engine::component::PhysicsComponent* pc, float delta_time);   // 检测并处理游戏对象和瓦片层之间的碰撞
+    void resolveSolidObjectCollision(engine::object::GameObject* move_obj, engine::object::GameObject* solid_obj);   // 检测可移动物体与SOLID物体的碰撞
 
 };
 
