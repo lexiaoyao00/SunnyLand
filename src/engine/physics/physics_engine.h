@@ -1,10 +1,13 @@
 #pragma once
 #include <vector>
 #include <glm/vec2.hpp>
+#include <optional>
+#include "../utils/math.h"
 
 namespace engine::component {
     class PhysicsComponent;
     class TileLayerComponent;
+    enum class TileType;
 }
 
 namespace engine::object {
@@ -19,6 +22,7 @@ private:
     std::vector<engine::component::TileLayerComponent*> collision_tile_layers_;     // 注册过的 碰撞瓦片图层 容器
     glm::vec2 gravity_ = {0.0f, 980.0f};    // 默认重力值(像素/秒^2,相当于100像素对应于1米)
     float max_speed_ = 500.0f;    // 最大速度(像素/秒)
+    std::optional<engine::utils::Rect> world_bounds_;   // 世界边界
 
     /// @brief 存储本帧法师的 GameObject 碰撞对 （每次 update 开始时清空）
     std::vector<std::pair<engine::object::GameObject*, engine::object::GameObject*>> collision_pairs_;
@@ -43,6 +47,8 @@ public:
     const glm::vec2& getGravity() const { return gravity_; }
     void setMaxSpeed(float max_speed) { max_speed_ = max_speed; }
     float getMaxSpeed() const { return max_speed_; }
+    void setWorldBounds(const engine::utils::Rect& world_bounds) { world_bounds_ = world_bounds; }
+    const std::optional<engine::utils::Rect>& getWorldBounds() const { return world_bounds_; }
     const std::vector<std::pair<engine::object::GameObject*, engine::object::GameObject*>>& getCollisionPairs() const {
         return collision_pairs_;
     }
@@ -51,6 +57,19 @@ private:
     void checkObjectCollision();
     void resolveTileCollision(engine::component::PhysicsComponent* pc, float delta_time);   // 检测并处理游戏对象和瓦片层之间的碰撞
     void resolveSolidObjectCollision(engine::object::GameObject* move_obj, engine::object::GameObject* solid_obj);   // 检测可移动物体与SOLID物体的碰撞
+
+    void applyWorldBounds(engine::component::PhysicsComponent* pc);    // 应用世界边界，限制物体移动范围
+
+
+    /**
+     * @brief 根据瓦片类型盒指定宽度x坐标，计算瓦片上对应的y坐标
+     *
+     * @param width 从瓦片左侧起算的宽度
+     * @param type 瓦片宽度
+     * @param tile_size 瓦片尺寸
+     * @return float 瓦片上对应的高度（从瓦片下侧起算）
+     */
+    float getTileHeightAtWidth(float width, engine::component::TileType type, glm::vec2 tile_size);
 
 };
 

@@ -58,10 +58,15 @@ namespace engine::physics {
             pc->velocity_ += (pc->getForce() / pc->getMass()) * delta_time;
             pc->clearForce();   //清除当前帧的力
 
+            // 处理瓦片层碰撞（速度和位置的更新也在此）
             resolveTileCollision(pc, delta_time);
+
+            // 世界边缘处理
+            applyWorldBounds(pc);
 
         }
 
+        // 对象间的碰撞
         checkObjectCollision();
     }
 
@@ -139,6 +144,16 @@ namespace engine::physics {
                     // 碰撞了，停止移动
                     pc->velocity_.x = 0.0f;
                     new_obj_pos.x = tile_x * tile_size.x - obj_size.x;
+                } else {
+                    // 检测右下角斜坡瓦片
+                    auto width_right = new_obj_pos.x + obj_size.x - tile_x * tile_size.x;
+                    auto height_right = getTileHeightAtWidth(width_right, tile_type_bottom, tile_size);
+                    if (height_right > 0.0f) {
+                        // 如果有碰撞（角点的世界y坐标 > 斜坡地面的世界y坐标），就让物体贴着斜坡表面
+                        if (new_obj_pos.y > (tile_y_bottom + 1) * layer->getTileSize().y - obj_size.y - height_right) {
+                            new_obj_pos.y = (tile_y_bottom + 1) * layer->getTileSize().y - obj_size.y - height_right;
+                        }
+                    }
                 }
             }
             else if (ds.x < 0.0f) {  // 向左移动
@@ -153,6 +168,15 @@ namespace engine::physics {
                 if (tile_type_top == engine::component::TileType::SOLID || tile_type_bottom == engine::component::TileType::SOLID) {
                     pc->velocity_.x = 0.0f;
                     new_obj_pos.x = (tile_x + 1) * tile_size.x;
+                } else {
+                    // 检测左下角斜坡瓦片
+                    auto width_left = new_obj_pos.x - tile_x * tile_size.x;
+                    auto height_left = getTileHeightAtWidth(width_left, tile_type_bottom, tile_size);
+                    if (height_left > 0.0f) {
+                        if (new_obj_pos.y > (tile_y_bottom + 1) * layer->getTileSize().y - obj_size.y - height_left) {
+                            new_obj_pos.y = (tile_y_bottom + 1) * layer->getTileSize().y - obj_size.y - height_left;
+                        }
+                    }
                 }
             }
             // 轴分离碰撞检测：再检测Y方向是否碰撞（X方向使用初始值 obj_pos.x）
@@ -165,9 +189,23 @@ namespace engine::physics {
                 auto tile_x_right = static_cast<int>(floor((obj_pos.x + obj_size.x - tolerance) / tile_size.x));   // 获取x方向瓦片右下坐标
                 auto tile_type_right = layer->getTileTypeAt({tile_x_right, tile_y});
 
-                if (tile_type_left == engine::component::TileType::SOLID || tile_type_right == engine::component::TileType::SOLID) {
+                if (tile_type_left == engine::component::TileType::SOLID || tile_type_right == engine::component::TileType::SOLID ||
+                    tile_type_left == engine::component::TileType::UNISOLID || tile_type_right == engine::component::TileType::UNISOLID) {
                     pc->velocity_.y = 0.0f;
                     new_obj_pos.y = tile_y * tile_size.y - obj_size.y;
+                } else {
+                    // 检测下方斜坡瓦片
+                    auto width_left = obj_pos.x - tile_x * tile_size.x;
+                    auto width_right = obj_pos.x + obj_size.x - tile_x_right * tile_size.x;
+                    auto height_left = getTileHeightAtWidth(width_left, tile_type_left, tile_size);
+                    auto height_right = getTileHeightAtWidth(width_right, tile_type_right, tile_size);
+                    auto height = std::max(height_left, height_right);  // 取左右两边的最高点进行检测
+                    if (height > 0.0f) {
+                        if (new_obj_pos.y > (tile_y + 1) * layer->getTileSize().y - obj_size.y - height) {
+                            new_obj_pos.y = (tile_y + 1) * layer->getTileSize().y - obj_size.y - height;
+                            pc->velocity_.y = 0.0f;     // 只有向下运动时才需要让 y 速度归零
+                        }
+                    }
                 }
             }
             else if (ds.y < 0.0f) {  // 向上移动
@@ -225,6 +263,56 @@ namespace engine::physics {
                 move_tc->translate(glm::vec2(0.0f, overlap.y));
                 if (move_pc->velocity_.y < 0.0f) move_pc->velocity_.y = 0.0f;
             }
+        }
+    }
+
+    void PhysicsEngine::applyWorldBounds(engine::component::PhysicsComponent *pc)
+    {
+        if (!pc || !world_bounds_) return;
+
+        // 只限定左、上、右边界，不限定下边界，以碰撞盒作为判断依据
+        auto* obj = pc->getOwner();
+        auto* cc = obj->getComponent<engine::component::ColliderComponent>();
+        auto* tc = obj->getComponent<engine::component::TransformComponent>();
+        auto world_aabb = cc->getWorldAABB();
+        auto obj_pos = world_aabb.position;
+        auto obj_size = world_aabb.size;
+
+        if (obj_pos.x < world_bounds_->position.x){
+            pc->velocity_.x = 0.0f;
+            obj_pos.x = world_bounds_->position.x;
+        }
+        if (obj_pos.y < world_bounds_->position.y){
+            pc->velocity_.y = 0.0f;
+            obj_pos.y = world_bounds_->position.y;
+        }
+        if (obj_pos.x + obj_size.x > world_bounds_->position.x + world_bounds_->size.x){
+            pc->velocity_.x = 0.0f;
+            obj_pos.x = world_bounds_->position.x + world_bounds_->size.x - obj_size.x;
+        }
+
+        tc->translate(obj_pos - world_aabb.position);
+    }
+
+    float PhysicsEngine::getTileHeightAtWidth(float width, engine::component::TileType type, glm::vec2 tile_size)
+    {
+        auto rel_x = glm::clamp(width / tile_size.x, 0.0f, 1.0f);
+        switch (type)
+        {
+            case engine::component::TileType::SLOPE_0_1:    // 斜坡 0-1
+                return rel_x * tile_size.y;
+            case engine::component::TileType::SLOPE_0_2:    // 斜坡 0-2
+                return rel_x * tile_size.y * 0.5f;
+            case engine::component::TileType::SLOPE_2_1:    // 斜坡 2-1
+                return rel_x * tile_size.y * 0.5f + tile_size.y * 0.5f;
+            case engine::component::TileType::SLOPE_1_0:    // 斜坡 1-0
+                return (1.0f - rel_x) * tile_size.y;
+            case engine::component::TileType::SLOPE_2_0:    // 斜坡 2-0
+                return (1.0f - rel_x) * tile_size.y * 0.5f;
+            case engine::component::TileType::SLOPE_1_2:    // 斜坡 1-2
+                return (1.0f - rel_x) * tile_size.y * 0.5f + tile_size.y * 0.5f;
+            default:
+                return 0.0f;        // 默认返回0.表示没有斜坡
         }
     }
 

@@ -10,6 +10,7 @@
 #include "../../engine/input/input_manager.h"
 #include "../../engine/render/camera.h"
 #include "../../engine/physics/physics_engine.h"
+#include "../../engine/utils/math.h"
 
 #include <spdlog/spdlog.h>
 
@@ -43,6 +44,19 @@ void GameScene::init()
         spdlog::error("Player not found");
         return;
     }
+
+    // 相机跟随玩家
+    auto* player_transform = player_->getComponent<engine::component::TransformComponent>();
+    if (player_transform) {
+        context_.getCamera().setTarget(player_transform);
+    }
+
+    // 设置相机边界
+    auto world_size = main_layer->getComponent<engine::component::TileLayerComponent>()->getWorldSize();
+    context_.getCamera().setLimitBounds(engine::utils::Rect(glm::vec2(0.0f), world_size));
+
+    // 设置世界边界
+    context_.getPhysicsEngine().setWorldBounds(engine::utils::Rect(glm::vec2(0.0f), world_size));
 
     Scene::init();
     spdlog::trace("GameScene has been initialized");
