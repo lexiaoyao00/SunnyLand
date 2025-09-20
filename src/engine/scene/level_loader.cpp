@@ -79,7 +79,7 @@ namespace engine::scene {
             }
         }
 
-        return false;
+        return true;
     }
 
     void LevelLoader::loadImageLayer(const nlohmann::json &layer_json, Scene *scene)

@@ -48,6 +48,8 @@ namespace engine::physics {
                 continue;
             }
 
+            pc->resetCollisionFlags(); // 重置碰撞标志位
+
             if (pc->isUseGravity())
             {
                 pc->addForce(gravity_ * pc->getMass());
@@ -144,6 +146,7 @@ namespace engine::physics {
                     // 碰撞了，停止移动
                     pc->velocity_.x = 0.0f;
                     new_obj_pos.x = tile_x * tile_size.x - obj_size.x;
+                    pc->setCollidedRight(true);
                 } else {
                     // 检测右下角斜坡瓦片
                     auto width_right = new_obj_pos.x + obj_size.x - tile_x * tile_size.x;
@@ -152,6 +155,7 @@ namespace engine::physics {
                         // 如果有碰撞（角点的世界y坐标 > 斜坡地面的世界y坐标），就让物体贴着斜坡表面
                         if (new_obj_pos.y > (tile_y_bottom + 1) * layer->getTileSize().y - obj_size.y - height_right) {
                             new_obj_pos.y = (tile_y_bottom + 1) * layer->getTileSize().y - obj_size.y - height_right;
+                            pc->setCollidedBelow(true);
                         }
                     }
                 }
@@ -168,6 +172,7 @@ namespace engine::physics {
                 if (tile_type_top == engine::component::TileType::SOLID || tile_type_bottom == engine::component::TileType::SOLID) {
                     pc->velocity_.x = 0.0f;
                     new_obj_pos.x = (tile_x + 1) * tile_size.x;
+                    pc->setCollidedLeft(true);
                 } else {
                     // 检测左下角斜坡瓦片
                     auto width_left = new_obj_pos.x - tile_x * tile_size.x;
@@ -175,6 +180,7 @@ namespace engine::physics {
                     if (height_left > 0.0f) {
                         if (new_obj_pos.y > (tile_y_bottom + 1) * layer->getTileSize().y - obj_size.y - height_left) {
                             new_obj_pos.y = (tile_y_bottom + 1) * layer->getTileSize().y - obj_size.y - height_left;
+                            pc->setCollidedBelow(true);
                         }
                     }
                 }
@@ -193,6 +199,7 @@ namespace engine::physics {
                     tile_type_left == engine::component::TileType::UNISOLID || tile_type_right == engine::component::TileType::UNISOLID) {
                     pc->velocity_.y = 0.0f;
                     new_obj_pos.y = tile_y * tile_size.y - obj_size.y;
+                    pc->setCollidedBelow(true);
                 } else {
                     // 检测下方斜坡瓦片
                     auto width_left = obj_pos.x - tile_x * tile_size.x;
@@ -204,6 +211,7 @@ namespace engine::physics {
                         if (new_obj_pos.y > (tile_y + 1) * layer->getTileSize().y - obj_size.y - height) {
                             new_obj_pos.y = (tile_y + 1) * layer->getTileSize().y - obj_size.y - height;
                             pc->velocity_.y = 0.0f;     // 只有向下运动时才需要让 y 速度归零
+                            pc->setCollidedBelow(true);
                         }
                     }
                 }
@@ -220,6 +228,7 @@ namespace engine::physics {
                 if (tile_type_left == engine::component::TileType::SOLID || tile_type_right == engine::component::TileType::SOLID) {
                     pc->velocity_.y = 0.0f;
                     new_obj_pos.y = (tile_y + 1) * tile_size.y;
+                    pc->setCollidedAbove(true);
                 }
             }
         }
@@ -249,19 +258,35 @@ namespace engine::physics {
         if (overlap.x < overlap.y) { // X轴重叠更多，优先解决X轴碰撞
             if (move_center.x < solid_center.x) {
                 move_tc->translate(glm::vec2(-overlap.x, 0.0f));
-                if (move_pc->velocity_.x > 0.0f) move_pc->velocity_.x = 0.0f;
+                if (move_pc->velocity_.x > 0.0f)
+                {
+                    move_pc->velocity_.x = 0.0f;
+                    move_pc->setCollidedRight(true);
+                }
             } else { //
                 move_tc->translate(glm::vec2(overlap.x, 0.0f));
-                if (move_pc->velocity_.x < 0.0f) move_pc->velocity_.x = 0.0f;
+                if (move_pc->velocity_.x < 0.0f)
+                {
+                    move_pc->velocity_.x = 0.0f;
+                    move_pc->setCollidedLeft(true);
+                }
             }
         } else { // Y轴重叠更多，优先解决Y轴碰撞
             if (move_center.y < solid_center.y) {
                 move_tc->translate(glm::vec2(0.0f, -overlap.y));
-                if (move_pc->velocity_.y > 0.0f) move_pc->velocity_.y = 0.0f;
+                if (move_pc->velocity_.y > 0.0f)
+                {
+                    move_pc->velocity_.y = 0.0f;
+                    move_pc->setCollidedBelow(true);
+                }
             }
             else {
                 move_tc->translate(glm::vec2(0.0f, overlap.y));
-                if (move_pc->velocity_.y < 0.0f) move_pc->velocity_.y = 0.0f;
+                if (move_pc->velocity_.y < 0.0f)
+                {
+                    move_pc->velocity_.y = 0.0f;
+                    move_pc->setCollidedAbove(true);
+                }
             }
         }
     }

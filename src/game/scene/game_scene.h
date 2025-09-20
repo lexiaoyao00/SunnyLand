@@ -23,11 +23,9 @@ namespace game::scene {
         void clean() override;
 
     private:
-        // 测试函数
-        // void createTestObject();
-        void testCamera();
-        void testPlayer();
-        void testCollisionPairs();
+        [[nodiscard]] bool initLevel();         // 初始化关卡
+        [[nodiscard]] bool initPlayer();        // 初始化玩家
+
     };
 
 

@@ -12,6 +12,8 @@
 #include "../../engine/physics/physics_engine.h"
 #include "../../engine/utils/math.h"
 
+#include "../component/player_component.h"
+
 #include <spdlog/spdlog.h>
 
 namespace game::scene {
@@ -24,39 +26,23 @@ GameScene::GameScene(std::string name, engine::core::Context &context, engine::s
 
 void GameScene::init()
 {
-    engine::scene::LevelLoader level_loader;
-    level_loader.loadLevel("assets/maps/level1.tmj", this);
-
-    // 注册 main 注册到物理引擎
-    auto* main_layer = findGameObjectByName("main");
-    if (main_layer) {
-        auto* tile_layer = main_layer->getComponent<engine::component::TileLayerComponent>();
-        if (tile_layer) {
-            context_.getPhysicsEngine().registerCollisionTileLayer(tile_layer);
-            spdlog::info("Collision tile layer has been registered to physics engine");
-        }
+    if (is_initialized_) {
+        spdlog::warn("GameScene has been initialized, do not initialize again");
+        return;
     }
+    spdlog::trace("GameScene init start");
 
-    // 创建测试对象
-    // createTestObject();
-    player_ = findGameObjectByName("player");
-    if (!player_) {
-        spdlog::error("Player not found");
+    if (!initLevel()){
+        spdlog::error("Failed to initialize level,cannot countinue...");
+        context_.getInputManager().setShouldQuit(true);
+        return;
+    }
+    if (!initPlayer()) {
+        spdlog::error("Failed to initialize player,cannot countinue...");
+        context_.getInputManager().setShouldQuit(true);
         return;
     }
 
-    // 相机跟随玩家
-    auto* player_transform = player_->getComponent<engine::component::TransformComponent>();
-    if (player_transform) {
-        context_.getCamera().setTarget(player_transform);
-    }
-
-    // 设置相机边界
-    auto world_size = main_layer->getComponent<engine::component::TileLayerComponent>()->getWorldSize();
-    context_.getCamera().setLimitBounds(engine::utils::Rect(glm::vec2(0.0f), world_size));
-
-    // 设置世界边界
-    context_.getPhysicsEngine().setWorldBounds(engine::utils::Rect(glm::vec2(0.0f), world_size));
 
     Scene::init();
     spdlog::trace("GameScene has been initialized");
@@ -72,15 +58,12 @@ void GameScene::render()
 {
     // TODO:
     Scene::render();
-    testCollisionPairs();
 }
 
 void GameScene::handleInput()
 {
     // TODO:
     Scene::handleInput();
-    // testCamera();
-    testPlayer();
 }
 
 void GameScene::clean()
@@ -90,45 +73,67 @@ void GameScene::clean()
     spdlog::trace("GameScene has been cleaned");
 }
 
-void GameScene::testCamera()
+bool GameScene::initLevel()
 {
-    auto& camera = context_.getCamera();
-    auto& input_manager = context_.getInputManager();
-    if (input_manager.isActionDown("move_up")) camera.move(glm::vec2(0.0f, -1.0f));
-    if (input_manager.isActionDown("move_down")) camera.move(glm::vec2(0.0f, 1.0f));
-    if (input_manager.isActionDown("move_left")) camera.move(glm::vec2(-1.0f, 0.0f));
-    if (input_manager.isActionDown("move_right")) camera.move(glm::vec2(1.0f, 0.0f));
+    engine::scene::LevelLoader level_loader;
+    if (!level_loader.loadLevel("assets/maps/level1.tmj", this)) {
+        spdlog::error("Failed to load level");
+        return false;
+    }
+
+    // 注册 main 注册到物理引擎
+    auto* main_layer = findGameObjectByName("main");
+    if (!main_layer) {
+        spdlog::error("Main layer not found");
+        return false;
+    }
+
+    auto* tile_layer = main_layer->getComponent<engine::component::TileLayerComponent>();
+    if (!tile_layer) {
+        spdlog::error("Tile layer not found");
+        return false;
+    }
+
+    context_.getPhysicsEngine().registerCollisionTileLayer(tile_layer);
+    spdlog::info("main layer has been registered to physics engine");
+
+    // 设置相机边界
+    auto world_size = main_layer->getComponent<engine::component::TileLayerComponent>()->getWorldSize();
+    context_.getCamera().setLimitBounds(engine::utils::Rect(glm::vec2(0.0f), world_size));
+
+    // 设置世界边界
+    context_.getPhysicsEngine().setWorldBounds(engine::utils::Rect(glm::vec2(0.0f), world_size));
+
+    spdlog::trace("GameScene has been initialized");
+    return true;
 }
 
-void GameScene::testPlayer()
+bool GameScene::initPlayer()
 {
-    if (!player_) return;
-    auto& input_manager = context_.getInputManager();
-    auto* pc = player_->getComponent<engine::component::PhysicsComponent>();
-    if (!pc) return;
-
-    if (input_manager.isActionDown("move_left")){
-        pc->velocity_.x = -100.0f;
-    } else {
-        pc->velocity_.x *= 0.9f;
+    // 创建测试对象
+    player_ = findGameObjectByName("player");
+    if (!player_) {
+        spdlog::error("Player not found");
+        return false;
     }
 
-    if (input_manager.isActionDown("move_right")){
-        pc->velocity_.x = 100.0f;
-    } else {
-        pc->velocity_.x *= 0.9f;
+    // 添加 PlayerComponent 到玩家
+    auto* player_component = player_->addComponent<game::component::PlayerComponent>();
+    if (!player_component) {
+        spdlog::error("Failed to add PlayerComponent to player");
+        return false;
     }
 
-    if (input_manager.isActionDown("jump")){
-        pc->velocity_.y = -400.0f;
+    // 相机跟随玩家
+    auto* player_transform = player_->getComponent<engine::component::TransformComponent>();
+    if (!player_transform) {
+        spdlog::error("Player transform not found");
+        return false;
     }
+    context_.getCamera().setTarget(player_transform);
 
+    spdlog::trace("Player has been initialized");
+    return true;
 }
-void GameScene::testCollisionPairs()
-{
-    auto clollision_pairs = context_.getPhysicsEngine().getCollisionPairs();
-    for (auto& pair : clollision_pairs){
-        spdlog::info("Collision pair: {} - {}", pair.first->getName(), pair.second->getName());
-    }
-}
-}
+
+} // namespace game::scene

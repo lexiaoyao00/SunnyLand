@@ -55,6 +55,11 @@ add_executable(${TARGET} src/main.cpp
                         src/engine/physics/collision.cpp
 
                         src/game/scene/game_scene.cpp
+                        src/game/component/player_component.cpp
+                        src/game/component/state/idle_state.cpp
+                        src/game/component/state/walk_state.cpp
+                        src/game/component/state/jump_state.cpp
+                        src/game/component/state/fall_state.cpp
                         )
 
 # 链接库

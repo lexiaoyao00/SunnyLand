@@ -72,7 +72,7 @@ bool GameApp::init() {
     if (!initSceneManager()) return false;
 
 
-    // 测试代码
+    // TODO:测试代码
     auto scene = std::make_unique<game::scene::GameScene>("GameScene", *context_, *scene_manager_);
     scene_manager_->requestPushScene(std::move(scene));
 
