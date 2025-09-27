@@ -13,7 +13,7 @@
 namespace game::component::state{
     void WalkState::enter()
     {
-
+        playAnimation("walk");
     }
 
     void WalkState::exit()

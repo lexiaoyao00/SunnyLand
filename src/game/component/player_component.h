@@ -11,6 +11,7 @@ namespace engine::component {
     class TransformComponent;
     class PhysicsComponent;
     class SpriteComponent;
+    class AnimationComponent;
 }
 
 namespace game::component::state {
@@ -25,6 +26,7 @@ private:
     engine::component::TransformComponent* transform_component_ = nullptr;  // 指向 TransformComponent 的非拥有指针
     engine::component::PhysicsComponent* physics_component_ = nullptr;  // 指向 PhysicsComponent 的非拥有指针
     engine::component::SpriteComponent* sprite_component_ = nullptr;  // 指向 SpriteComponent 的非拥有指针
+    engine::component::AnimationComponent* animation_component_ = nullptr;  // 指向 AnimationComponent 的非拥有指针
 
     std::unique_ptr<state::PlayerState> current_state_;
     bool is_dead_ = false;
@@ -48,6 +50,7 @@ public:
     engine::component::TransformComponent* getTransformComponent() const { return transform_component_; }
     engine::component::PhysicsComponent* getPhysicsComponent() const { return physics_component_; }
     engine::component::SpriteComponent* getSpriteComponent() const { return sprite_component_; }
+    engine::component::AnimationComponent* getAnimationComponent() const { return animation_component_; }
 
     void setIsDead(bool is_dead) { is_dead_ = is_dead; }
     bool isDead() const { return is_dead_; }

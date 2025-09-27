@@ -42,6 +42,11 @@
             },
          "properties":[
                 {
+                 "name":"animation",
+                 "type":"string",
+                 "value":"{\n    \"idle\":{\"duration\":200, \"row\":0, \"frames\":[0,1,2,3,2,1]},\n    \"walk\":{\"row\":1, \"frames\":[0,1,2,3,4,5]},\n    \"climb\":{\"row\":2, \"frames\":[0,1,2,3]},\n    \"hurt\":{\"row\":4, \"frames\":[0,1]},\n    \"jump\":{\"row\":5, \"frames\":[0]},\n    \"fall\":{\"row\":5, \"frames\":[1]}\n}"
+                }, 
+                {
                  "name":"gravity",
                  "type":"bool",
                  "value":true
@@ -84,6 +89,11 @@
              "y":0
             },
          "properties":[
+                {
+                 "name":"animation",
+                 "type":"string",
+                 "value":"{\"idle\":{\"duration\":300,\"frames\":[0,1,2,3]},\"jump\":{\"row\":1,\"frames\":[1]},\"fall\":{\"row\":1,\"frames\":[2]}}"
+                }, 
                 {
                  "name":"gravity",
                  "type":"bool",
@@ -128,6 +138,11 @@
             },
          "properties":[
                 {
+                 "name":"animation",
+                 "type":"string",
+                 "value":"{\"walk\":{\"frames\":[0,1,2,3,4,5]}}"
+                }, 
+                {
                  "name":"gravity",
                  "type":"bool",
                  "value":true
@@ -171,6 +186,11 @@
             },
          "properties":[
                 {
+                 "name":"animation",
+                 "type":"string",
+                 "value":"{\"fly\":{\"frames\":[0,1,2,3]}}"
+                }, 
+                {
                  "name":"tag",
                  "type":"string",
                  "value":"enemy"
@@ -209,6 +229,11 @@
             },
          "properties":[
                 {
+                 "name":"animation",
+                 "type":"string",
+                 "value":"{\"idle\":{\"duration\":200,\"frames\":[0,1,2,3,4,3,2,1]}}"
+                }, 
+                {
                  "name":"tag",
                  "type":"string",
                  "value":"item"
@@ -246,6 +271,11 @@
              "y":0
             },
          "properties":[
+                {
+                 "name":"animation",
+                 "type":"string",
+                 "value":"{\"idle\":{\"duration\":200,\"frames\":[0,1,2,3,4]}}"
+                }, 
                 {
                  "name":"tag",
                  "type":"string",

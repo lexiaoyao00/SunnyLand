@@ -40,6 +40,7 @@ add_executable(${TARGET} src/main.cpp
                         src/engine/resource/texture_manager.cpp
                         src/engine/render/renderer.cpp
                         src/engine/render/camera.cpp
+                        src/engine/render/animation.cpp
                         src/engine/input/input_manager.cpp
                         src/engine/object/game_object.cpp
                         src/engine/component/sprite_component.cpp
@@ -48,6 +49,7 @@ add_executable(${TARGET} src/main.cpp
                         src/engine/component/tilelayer_component.cpp
                         src/engine/component/physics_component.cpp
                         src/engine/component/collider_component.cpp
+                        src/engine/component/animation_component.cpp
                         src/engine/scene/scene.cpp
                         src/engine/scene/scene_manager.cpp
                         src/engine/scene/level_loader.cpp
@@ -60,6 +62,7 @@ add_executable(${TARGET} src/main.cpp
                         src/game/component/state/walk_state.cpp
                         src/game/component/state/jump_state.cpp
                         src/game/component/state/fall_state.cpp
+                        src/game/component/state/player_state.cpp
                         )
 
 # 链接库

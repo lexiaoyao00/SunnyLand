@@ -3,6 +3,7 @@
 #include "../../engine/component/transform_component.h"
 #include "../../engine/component/physics_component.h"
 #include "../../engine/component/sprite_component.h"
+#include "../../engine/component/animation_component.h"
 #include "../../engine/object/game_object.h"
 #include "state/idle_state.h"
 
@@ -40,8 +41,9 @@ void PlayerComponent::init()
     transform_component_ = owner_->getComponent<engine::component::TransformComponent>();
     physics_component_ = owner_->getComponent<engine::component::PhysicsComponent>();
     sprite_component_ = owner_->getComponent<engine::component::SpriteComponent>();
+    animation_component_ = owner_->getComponent<engine::component::AnimationComponent>();
 
-    if (!transform_component_ || !physics_component_ || !sprite_component_) {
+    if (!transform_component_ || !physics_component_ || !sprite_component_ || !animation_component_) {
         spdlog::error("PlayerComponent missing required components");
     }
 

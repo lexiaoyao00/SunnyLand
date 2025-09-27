@@ -25,6 +25,7 @@ namespace game::scene {
     private:
         [[nodiscard]] bool initLevel();         // 初始化关卡
         [[nodiscard]] bool initPlayer();        // 初始化玩家
+        [[nodiscard]] bool initEnemyAndItem(); // 初始化敌人与道具
 
     };
 

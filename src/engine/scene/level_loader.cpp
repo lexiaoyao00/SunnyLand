@@ -6,6 +6,8 @@
 #include "../component/tilelayer_component.h"
 #include "../component/collider_component.h"
 #include "../component/physics_component.h"
+#include "../component/animation_component.h"
+#include "../render/animation.h"
 #include "../physics/collider.h"
 #include "../scene/scene.h"
 #include "../core/context.h"
@@ -72,7 +74,7 @@ namespace engine::scene {
             } else if (layer_type == "tilelayer") {
                 loadTileLayer(layer_json, scene);
             } else if (layer_type == "objectgroup") {
-                loadObjectGroup(layer_json, scene);
+                loadObjectLayer(layer_json, scene);
             } else
             {
                 spdlog::warn("Unsupported layer type: {}", layer_type);
@@ -132,7 +134,7 @@ namespace engine::scene {
         spdlog::info("Loaded tile layer: {}", layer_name);
     }
 
-    void LevelLoader::loadObjectGroup(const nlohmann::json& layer_json, Scene* scene)
+    void LevelLoader::loadObjectLayer(const nlohmann::json& layer_json, Scene* scene)
     {
         if(!layer_json.contains("objects") || !layer_json["objects"].is_array())
         {
@@ -210,10 +212,71 @@ namespace engine::scene {
                     }
                 }
 
+                // 获取动画信息并设置
+                auto anim_string = getTileProperty<std::string>(tile_json, "animation");
+                if (anim_string){
+                    nlohmann::json anim_json;
+                    try
+                    {
+                        anim_json = nlohmann::json::parse(anim_string.value());
+                    }
+                    catch(const nlohmann::json::parse_error& e)
+                    {
+                        spdlog::error("解析动画 JSON 字符串失败：{}", e.what());
+                        continue;   // 跳过当前对象
+                    }
+                    // 添加 AnimationComponent
+                    auto* ac = game_object->addComponent<engine::component::AnimationComponent>();
+                    addAnimation(anim_json, ac, src_size);
+                }
 
+                // 添加到场景中
                 scene->addGameObject(std::move(game_object));
                 spdlog::info("Loaded object: {}", object_name);
             }
+        }
+    }
+
+    void LevelLoader::addAnimation(const nlohmann::json &anim_json, engine::component::AnimationComponent *ac, const glm::vec2 &sprite_size)
+    {
+        if (!anim_json.is_object() || !ac) {
+            spdlog::error("无效的动画 JSON 对象或 AnimationComponent 指针。");
+            return;
+        }
+
+        // 遍历动画 JSON 对象中的每个键值对
+        for (const auto& anim:anim_json.items()) {
+            const std::string& anim_name = anim.key();
+            const auto& anim_info = anim.value();
+            if (!anim_info.is_object()){
+                spdlog::error("动画 '{}' 的信息无效或为空。", anim_name);
+                continue;
+            }
+            // 获取可能存在的动画帧信息
+            auto duration_ms = anim_info.value("duration",100);         // 默认为100ms
+            auto duration = static_cast<float>(duration_ms) / 1000.0f;  // 转换为秒
+            auto row = anim_info.value("row",0);    // 默认行数为0
+            // 帧信息（数组）必须存在
+            if (!anim_info.contains("frames") || !anim_info["frames"].is_array()) {
+                spdlog::warn("动画 '{}' 缺少帧信息。", anim_name);
+                continue;
+            }
+            auto animation = std::make_unique<engine::render::Animation>(anim_name);
+            for (const auto& frame : anim_info["frames"]) {
+                if (!frame.is_number_integer()){
+                    spdlog::warn("动画 {} 中 frames 数组格式错误！", anim_name);
+                    continue;
+                }
+                auto column = frame.get<int>();
+                SDL_FRect src_rect = {
+                    column * sprite_size.x,
+                    row * sprite_size.y,
+                    sprite_size.x,
+                    sprite_size.y
+                };
+                animation->addFrame(src_rect, duration);
+            }
+            ac->addAnimation(std::move(animation));
         }
     }
 
