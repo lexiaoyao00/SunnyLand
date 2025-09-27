@@ -117,7 +117,7 @@ namespace engine::physics {
         if (!obj) return;
         auto* tc = obj->getComponent<engine::component::TransformComponent>();
         auto* cc = obj->getComponent<engine::component::ColliderComponent>();
-        if (!tc || !cc || !cc->isActive() || cc->isTrigger()) return;
+        if (!tc || !cc || cc->isTrigger()) return;
         auto world_aabb = cc->getWorldAABB();       // 使用最小包围盒进行碰撞检测（简化碰撞检测）
         auto obj_pos = world_aabb.position;
         auto obj_size = world_aabb.size;
@@ -127,6 +127,12 @@ namespace engine::physics {
         auto tolerance = 1.0f; // 检测右/下边缘时，需要减1像素，否则会检测到下一行/列的瓦片(地图瓦片位置序号从0开始，计算结果位置为2其实是1号瓦片)
         auto ds = pc->velocity_ * delta_time;   // 速度 * 时间 = 距离，计算移动距离
         auto new_obj_pos = obj_pos + ds;   // 新位置 = 旧位置 + 距离
+
+        if (!cc->isActive()){   // 如果碰撞器未激活，则不进行碰撞检测，让物体正常移动然后返回
+            tc->translate(ds);
+            pc->velocity_ = glm::clamp(pc->velocity_, -max_speed_, max_speed_);
+            return;
+        }
 
         for (auto* layer : collision_tile_layers_){
             if (!layer) continue;

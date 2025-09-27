@@ -54,7 +54,7 @@ public:
     }
 
 private:
-    void checkObjectCollision();
+    void checkObjectCollision();    // 物体间碰撞检测
     void resolveTileCollision(engine::component::PhysicsComponent* pc, float delta_time);   // 检测并处理游戏对象和瓦片层之间的碰撞
     void resolveSolidObjectCollision(engine::object::GameObject* move_obj, engine::object::GameObject* solid_obj);   // 检测可移动物体与SOLID物体的碰撞
 

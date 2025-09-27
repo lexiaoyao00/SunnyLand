@@ -27,6 +27,9 @@ namespace game::scene {
         [[nodiscard]] bool initPlayer();        // 初始化玩家
         [[nodiscard]] bool initEnemyAndItem(); // 初始化敌人与道具
 
+        // 测试函数
+        void testHealth();  // 测试生命组件
+
     };
 
 

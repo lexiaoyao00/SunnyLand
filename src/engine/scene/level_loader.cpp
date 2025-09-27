@@ -7,6 +7,7 @@
 #include "../component/collider_component.h"
 #include "../component/physics_component.h"
 #include "../component/animation_component.h"
+#include "../component/health_component.h"
 #include "../render/animation.h"
 #include "../physics/collider.h"
 #include "../scene/scene.h"
@@ -228,6 +229,12 @@ namespace engine::scene {
                     // 添加 AnimationComponent
                     auto* ac = game_object->addComponent<engine::component::AnimationComponent>();
                     addAnimation(anim_json, ac, src_size);
+                }
+
+                // 获取生命值信息并设置
+                auto health = getTileProperty<int>(tile_json, "health");
+                if (health){
+                    game_object->addComponent<engine::component::HealthComponent>(health.value());
                 }
 
                 // 添加到场景中
