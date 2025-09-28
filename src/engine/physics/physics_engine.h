@@ -24,8 +24,10 @@ private:
     float max_speed_ = 500.0f;    // 最大速度(像素/秒)
     std::optional<engine::utils::Rect> world_bounds_;   // 世界边界
 
-    /// @brief 存储本帧法师的 GameObject 碰撞对 （每次 update 开始时清空）
+    /// @brief 存储本帧发生的 GameObject 碰撞对 （每次 update 开始时清空）
     std::vector<std::pair<engine::object::GameObject*, engine::object::GameObject*>> collision_pairs_;
+    /// @brief 存储本帧发生的瓦片触发事件（每次 update 开始时清空）
+    std::vector<std::pair<engine::object::GameObject*, engine::component::TileType>> tile_trigger_events_;
 public:
     PhysicsEngine() = default;
 
@@ -52,6 +54,9 @@ public:
     const std::vector<std::pair<engine::object::GameObject*, engine::object::GameObject*>>& getCollisionPairs() const {
         return collision_pairs_;
     }
+    const std::vector<std::pair<engine::object::GameObject*, engine::component::TileType>>& getTileTriggerEvents() const {
+        return tile_trigger_events_;
+    }
 
 private:
     void checkObjectCollision();    // 物体间碰撞检测
@@ -70,6 +75,12 @@ private:
      * @return float 瓦片上对应的高度（从瓦片下侧起算）
      */
     float getTileHeightAtWidth(float width, engine::component::TileType type, glm::vec2 tile_size);
+
+    /**
+     * @brief 检测所有游戏对象与瓦片层的触发类型瓦片碰撞，并记录触发事件。（位移处理完毕后再调用）
+     *
+     */
+    void checkTileTriggers();
 
 };
 

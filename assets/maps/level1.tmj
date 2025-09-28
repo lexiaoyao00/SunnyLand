@@ -156,6 +156,18 @@
                  "y":106
                 }, 
                 {
+                 "gid":612,
+                 "height":13,
+                 "id":18,
+                 "name":"gem1",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":15,
+                 "x":176,
+                 "y":112
+                }, 
+                {
                  "gid":611,
                  "height":21,
                  "id":5,
@@ -176,8 +188,8 @@
                  "type":"",
                  "visible":true,
                  "width":40,
-                 "x":949.333333333333,
-                 "y":90.6666666666667
+                 "x":1008,
+                 "y":128
                 }, 
                 {
                  "gid":610,
@@ -188,8 +200,8 @@
                  "type":"",
                  "visible":true,
                  "width":40,
-                 "x":719.333333333333,
-                 "y":56
+                 "x":720,
+                 "y":128
                 }, 
                 {
                  "gid":609,
@@ -214,18 +226,6 @@
                  "width":15,
                  "x":878.666666666667,
                  "y":106.333333333333
-                }, 
-                {
-                 "gid":612,
-                 "height":13,
-                 "id":10,
-                 "name":"gem",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":15,
-                 "x":176,
-                 "y":128
                 }, 
                 {
                  "gid":602,
@@ -262,6 +262,18 @@
                  "width":15,
                  "x":304.0625,
                  "y":297.125
+                }, 
+                {
+                 "gid":609,
+                 "height":28,
+                 "id":17,
+                 "name":"opossum",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":36,
+                 "x":400,
+                 "y":160
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -283,7 +295,7 @@
          "y":0
         }],
  "nextlayerid":7,
- "nextobjectid":17,
+ "nextobjectid":19,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

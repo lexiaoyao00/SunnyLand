@@ -21,9 +21,6 @@ namespace game::component {
     {
         if (is_dead_ || !health_component_ || damage <= 0){
             spdlog::warn("玩家已经死亡或缺少必要组件，无法承受伤害");
-            if (!health_component_) {
-                spdlog::warn("缺少 HealthComponent");
-            }
             return false;
         }
 

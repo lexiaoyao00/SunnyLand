@@ -218,7 +218,13 @@
              "visible":true,
              "x":0,
              "y":0
-            }
+            },
+         "properties":[
+                {
+                 "name":"hazard",
+                 "type":"bool",
+                 "value":true
+                }]
         }, 
         {
          "id":25,
@@ -274,7 +280,13 @@
              "visible":true,
              "x":0,
              "y":0
-            }
+            },
+         "properties":[
+                {
+                 "name":"hazard",
+                 "type":"bool",
+                 "value":true
+                }]
         }, 
         {
          "id":27,

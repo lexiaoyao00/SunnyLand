@@ -200,6 +200,10 @@ namespace engine::scene {
                 if (tag){
                     game_object->setTag(tag.value());
                 }
+                // 如果是陷阱瓦片，且没有手动设置标签，则自动设置标签为 "hazard"
+                else if (tile_info.type == engine::component::TileType::HAZARD){
+                    game_object->setTag("hazard");
+                }
 
                 // 获取重力信息
                 auto gravity = getTileProperty<bool>(tile_json, "gravity");
@@ -334,6 +338,10 @@ namespace engine::scene {
                         spdlog::error("Unknown slope type: {}", slope_type);
                         return engine::component::TileType::NORMAL;
                     }
+                }
+                else if (property.contains("name") && property["name"] == "hazard") {
+                    auto is_hazard = property.value("value", false);
+                    return is_hazard ? engine::component::TileType::HAZARD : engine::component::TileType::NORMAL;
                 }
                 // TODO: 添加更多类型的tile type
             }

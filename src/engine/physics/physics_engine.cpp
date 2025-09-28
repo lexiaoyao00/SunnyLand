@@ -7,6 +7,7 @@
 #include "../physics/collision.h"
 #include <spdlog/spdlog.h>
 #include <glm/glm.hpp>
+#include <set>
 
 namespace engine::physics {
     void PhysicsEngine::registerComponent(component::PhysicsComponent *component)
@@ -40,6 +41,7 @@ namespace engine::physics {
     {
 
         collision_pairs_.clear();
+        tile_trigger_events_.clear();
 
         for (auto* pc : components_)
         {
@@ -70,6 +72,9 @@ namespace engine::physics {
 
         // 对象间的碰撞
         checkObjectCollision();
+
+        // 检测瓦片触发事件（检测前已经处理完位移）
+        checkTileTriggers();
     }
 
     void PhysicsEngine::checkObjectCollision()
@@ -344,6 +349,48 @@ namespace engine::physics {
                 return (1.0f - rel_x) * tile_size.y * 0.5f + tile_size.y * 0.5f;
             default:
                 return 0.0f;        // 默认返回0.表示没有斜坡
+        }
+    }
+
+    void PhysicsEngine::checkTileTriggers()
+    {
+        for (auto* pc : components_){
+            if (!pc || !pc->isEnable()) continue;
+            auto* obj = pc->getOwner();
+            if (!obj) continue;
+            auto* cc = obj->getComponent<engine::component::ColliderComponent>();
+            if (!cc || !cc->isActive() || cc->isTrigger()) continue;
+
+            auto world_aabb = cc->getWorldAABB();
+
+            std::set<engine::component::TileType> triggers_set;
+
+            for (auto* layer:collision_tile_layers_){
+                if (!layer) continue;
+                auto tile_size = layer->getTileSize();
+                constexpr float tolerance = 1.0f;   // 检测右边缘和下边缘时，需要减1像素，否则会检测不到
+
+                // 获取瓦片坐标范围
+                auto start_x = static_cast<int>(floor(world_aabb.position.x / tile_size.x));
+                auto start_y = static_cast<int>(floor(world_aabb.position.y / tile_size.y));
+                auto end_x = static_cast<int>(ceil((world_aabb.position.x + world_aabb.size.x - tolerance) / tile_size.x));
+                auto end_y = static_cast<int>(ceil((world_aabb.position.y + world_aabb.size.y - tolerance) / tile_size.y));
+
+                for (int x = start_x; x <= end_x; ++x){
+                    for (int y = start_y; y <= end_y; ++y){
+                        auto tile_type = layer->getTileTypeAt({x, y});
+                        // TODO: 添加更多触发器类型
+                        if (tile_type  == engine::component::TileType::HAZARD){
+                            triggers_set.insert(tile_type);
+                        }
+                    }
+                }
+
+                for (const auto& type : triggers_set){
+                    tile_trigger_events_.emplace_back(obj, type);
+                    spdlog::trace("Tile trigger event: obj={}, type={}", obj->getName(), static_cast<int>(type));
+                }
+            }
         }
     }
 

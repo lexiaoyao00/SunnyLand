@@ -1,5 +1,6 @@
 #pragma once
 #include "../../engine/scene/scene.h"
+#include <glm/fwd.hpp>
 
 namespace engine::object {
     class GameObject;
@@ -27,8 +28,19 @@ namespace game::scene {
         [[nodiscard]] bool initPlayer();        // 初始化玩家
         [[nodiscard]] bool initEnemyAndItem(); // 初始化敌人与道具
 
-        // 测试函数
-        void testHealth();  // 测试生命组件
+
+        void handleObjectCollisions(); // 处理对象碰撞
+        void handleTileTriggers();   // 处理瓦片触发事件
+        void PlayerVSEnemyCollision(engine::object::GameObject* player, engine::object::GameObject* enemy);
+        void PlayerVSItemCollision(engine::object::GameObject* player, engine::object::GameObject* item);
+
+        /**
+         * @brief 创建一次性特效
+         *
+         * @param center_pos 特效中心位置
+         * @param tag 特效标签（决定特效类型）
+         */
+        void createEffect(const glm::vec2& center_pos, const std::string& tag);
 
     };
 
