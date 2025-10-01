@@ -390,8 +390,8 @@ namespace engine::physics {
                 auto end_x = static_cast<int>(ceil((world_aabb.position.x + world_aabb.size.x - tolerance) / tile_size.x));
                 auto end_y = static_cast<int>(ceil((world_aabb.position.y + world_aabb.size.y - tolerance) / tile_size.y));
 
-                for (int x = start_x; x <= end_x; ++x){
-                    for (int y = start_y; y <= end_y; ++y){
+                for (int x = start_x; x < end_x; ++x){
+                    for (int y = start_y; y < end_y; ++y){
                         auto tile_type = layer->getTileTypeAt({x, y});
                         // TODO: 添加更多触发器类型
                         if (tile_type  == engine::component::TileType::HAZARD){
