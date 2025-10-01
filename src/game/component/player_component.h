@@ -43,6 +43,14 @@ private:
     // ---属性相关参数
     float stunned_duration_ = 0.4f;  // 玩家被击中后的僵直时间（秒）
 
+    // 土狼时间(Coyote time):允许玩家在离地后短暂时间内仍然可以跳跃
+    static constexpr float coyote_time_ = 0.1f;     // Coyote time（秒）
+    float coyote_timer_ = 0.0f;     // Coyote timer 计时器
+
+    // 无敌闪烁时间
+    static constexpr float flash_interval_ = 0.1f;  // 闪烁间隔时间（秒）
+    float flash_timer_ = 0.0f;  // 无敌闪烁计时器
+
 public:
     PlayerComponent() = default;
     ~PlayerComponent() override = default;
@@ -78,6 +86,7 @@ public:
     float getClimbSpeed() const { return climb_speed_; }
 
     void setState(std::unique_ptr<state::PlayerState> new_state);  // 切换玩家状态
+    bool isOnGround() const;  // 玩家是否在地面上(考虑了 Coyote time)
 
 private:
 

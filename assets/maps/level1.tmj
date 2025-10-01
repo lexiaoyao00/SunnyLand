@@ -128,8 +128,8 @@
                  "type":"",
                  "visible":true,
                  "width":32,
-                 "x":464,
-                 "y":384
+                 "x":640,
+                 "y":160
                 }, 
                 {
                  "gid":608,
@@ -274,6 +274,18 @@
                  "width":36,
                  "x":400,
                  "y":160
+                }, 
+                {
+                 "gid":611,
+                 "height":21,
+                 "id":19,
+                 "name":"fruit",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":21,
+                 "x":464,
+                 "y":352
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -295,7 +307,7 @@
          "y":0
         }],
  "nextlayerid":7,
- "nextobjectid":19,
+ "nextobjectid":20,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
