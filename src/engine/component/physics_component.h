@@ -29,6 +29,8 @@ private:
     bool collided_above_ = false;
     bool collided_left_ = false;
     bool collided_right_ = false;
+    bool collided_ladder_ = false;
+    bool is_on_top_ladder_ = false;
 
 public:
     PhysicsComponent(engine::physics::PhysicsEngine* physics_engine, bool use_gravity = true, float mass = 1.0f);
@@ -60,17 +62,23 @@ public:
         collided_above_ = false;
         collided_left_ = false;
         collided_right_ = false;
+        collided_ladder_ = false;
+        is_on_top_ladder_ = false;
     }
 
     void setCollidedBelow(bool collided) { collided_below_ = collided; }
     void setCollidedAbove(bool collided) { collided_above_ = collided; }
     void setCollidedLeft(bool collided) { collided_left_ = collided; }
     void setCollidedRight(bool collided) { collided_right_ = collided; }
+    void setCollidedLadder(bool collided) { collided_ladder_ = collided; }
+    void setOnTopLadder(bool on_top_ladder) { is_on_top_ladder_ = on_top_ladder; }
 
     bool hasCollidedBelow() const { return collided_below_; }
     bool hasCollidedAbove() const { return collided_above_; }
     bool hasCollidedLeft() const { return collided_left_; }
     bool hasCollidedRight() const { return collided_right_; }
+    bool hasCollidedLadder() const { return collided_ladder_; }
+    bool isOnTopLadder() const { return is_on_top_ladder_; }
 
 private:
     void init() override;

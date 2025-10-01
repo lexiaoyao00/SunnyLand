@@ -38,6 +38,7 @@ public:
 
     void addAnimation(std::unique_ptr<engine::render::Animation> animation);
     void playAnimation(const std::string& name);
+    void resumeAnimation() { is_playing_ = true; }
     void stopAnimation() { is_playing_ = false; }
 
     // getters and setters

@@ -129,7 +129,7 @@ namespace engine::physics {
         if (world_aabb.size.x <= 0.0f || world_aabb.size.y <= 0.0f) return;
 
 
-        auto tolerance = 1.0f; // 检测右/下边缘时，需要减1像素，否则会检测到下一行/列的瓦片(地图瓦片位置序号从0开始，计算结果位置为2其实是1号瓦片)
+        constexpr float tolerance = 1.0f; // 检测右/下边缘时，需要减1像素，否则会检测到下一行/列的瓦片(地图瓦片位置序号从0开始，计算结果位置为2其实是1号瓦片)
         auto ds = pc->velocity_ * delta_time;   // 速度 * 时间 = 距离，计算移动距离
         auto new_obj_pos = obj_pos + ds;   // 新位置 = 旧位置 + 距离
 
@@ -211,6 +211,20 @@ namespace engine::physics {
                     pc->velocity_.y = 0.0f;
                     new_obj_pos.y = tile_y * tile_size.y - obj_size.y;
                     pc->setCollidedBelow(true);
+                //如果两个角点都位于梯子上，则判断是不是处于梯子顶
+                } else if (tile_type_left == engine::component::TileType::LADDER && tile_type_right == engine::component::TileType::LADDER) {
+                    auto tile_type_up_l = layer->getTileTypeAt({tile_x, tile_y - 1});   //检测左角点上方瓦片类型
+                    auto tile_type_up_r = layer->getTileTypeAt({tile_x_right, tile_y - 1});   //检测右角点上方瓦片类型
+                    // 如果上方不是梯子，证明处梯子顶
+                    if (tile_type_up_l != engine::component::TileType::LADDER && tile_type_up_r != engine::component::TileType::LADDER){
+                        if (pc->isUseGravity()){ // 非攀爬状态
+                            //让物体贴着梯子顶层位置（与 SOLID 情况相同）
+                            pc->setOnTopLadder(true);
+                            pc->setCollidedBelow(true);
+                            new_obj_pos.y = tile_y * tile_size.y - obj_size.y;
+                            pc->velocity_.y = 0.0f;
+                        } else {} // 攀爬状态不做处理
+                    }
                 } else {
                     // 检测下方斜坡瓦片
                     auto width_left = obj_pos.x - tile_x * tile_size.x;
@@ -368,7 +382,7 @@ namespace engine::physics {
             for (auto* layer:collision_tile_layers_){
                 if (!layer) continue;
                 auto tile_size = layer->getTileSize();
-                constexpr float tolerance = 1.0f;   // 检测右边缘和下边缘时，需要减1像素，否则会检测不到
+                constexpr float tolerance = 1.0f;   // 检测右边缘和下边缘时，需要减1像素，否则会检测到下一行/列的瓦片
 
                 // 获取瓦片坐标范围
                 auto start_x = static_cast<int>(floor(world_aabb.position.x / tile_size.x));
@@ -382,6 +396,10 @@ namespace engine::physics {
                         // TODO: 添加更多触发器类型
                         if (tile_type  == engine::component::TileType::HAZARD){
                             triggers_set.insert(tile_type);
+                        }
+                        // 梯子类型不用记录到事件容器，物理引擎自己处理
+                        else if (tile_type == engine::component::TileType::LADDER){
+                            pc->setCollidedLadder(true);
                         }
                     }
                 }

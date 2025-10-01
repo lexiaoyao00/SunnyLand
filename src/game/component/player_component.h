@@ -36,6 +36,7 @@ private:
     // ---移动相关参数
     float move_force_ = 200.0f;      // 水平移动力
     float max_speed_ = 120.0f;      // 最大速度（像素/秒）
+    float climb_speed_ = 100.0f;      // 爬梯子的速度（像素/秒）
     float jump_vel_ = 350.0f;      // 跳跃速度（按下 "jump" 时的瞬时向上的速度
     float friction_factor_ = 0.85f;     // 摩擦系数（ Idle 时的缓冲效果，每帧乘以此系数）
 
@@ -67,12 +68,14 @@ public:
     void setJumpVelocity(float jump_force) { jump_vel_ = jump_force; }
     void setFrictionFactor(float friction_factor) { friction_factor_ = friction_factor; }
     void setStunnedDuration(float stunned_duration) { stunned_duration_ = stunned_duration; }
+    void setClimbSpeed(float climb_speed) { climb_speed_ = climb_speed; }
 
     float getMoveForce() const { return move_force_; }
     float getMaxSpeed() const { return max_speed_; }
     float getJumpVelocity() const { return jump_vel_; }
     float getFrictionFactor() const { return friction_factor_; }
     float getStunnedDuration() const { return stunned_duration_; }
+    float getClimbSpeed() const { return climb_speed_; }
 
     void setState(std::unique_ptr<state::PlayerState> new_state);  // 切换玩家状态
 

@@ -67,6 +67,7 @@ add_executable(${TARGET} src/main.cpp
                         src/game/component/state/player_state.cpp
                         src/game/component/state/dead_state.cpp
                         src/game/component/state/hurt_state.cpp
+                        src/game/component/state/climb_state.cpp
                         src/game/component/ai/jump_behavior.cpp
                         src/game/component/ai/patrol_behavior.cpp
                         src/game/component/ai/updown_behavior.cpp

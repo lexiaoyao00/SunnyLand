@@ -2,6 +2,7 @@
 #include "jump_state.h"
 #include "idle_state.h"
 #include "fall_state.h"
+#include "climb_state.h"
 #include "../../../engine/core/context.h"
 #include "../../../engine/component/physics_component.h"
 #include "../../../engine/component/sprite_component.h"
@@ -26,6 +27,10 @@ namespace game::component::state{
         auto input_manager = context.getInputManager();
         auto physics_component = player_component_->getPhysicsComponent();
         auto sprite_component = player_component_->getSpriteComponent();
+
+        if (physics_component->hasCollidedLadder() && input_manager.isActionDown("move_up") ){
+                return std::make_unique<ClimbState>(player_component_);
+        }
 
         // 如果按下 "jump" 则切换到 JumpState
         if (input_manager.isActionPressed("jump")) {
