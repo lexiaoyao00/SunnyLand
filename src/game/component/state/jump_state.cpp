@@ -17,7 +17,7 @@ namespace game::component::state{
     {
         playAnimation("jump");
         auto physics_component = player_component_->getPhysicsComponent();
-        physics_component->velocity_.y = - player_component_->getJumpForce(); // 向上跳
+        physics_component->velocity_.y = - player_component_->getJumpVelocity(); // 向上跳
         spdlog::debug("JumpState::enter, velocity.y = {}", physics_component->velocity_.y);
     }
 

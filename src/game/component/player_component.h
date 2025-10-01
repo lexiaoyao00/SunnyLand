@@ -36,7 +36,7 @@ private:
     // ---移动相关参数
     float move_force_ = 200.0f;      // 水平移动力
     float max_speed_ = 120.0f;      // 最大速度（像素/秒）
-    float jump_force_ = 350.0f;      // 跳跃力
+    float jump_vel_ = 350.0f;      // 跳跃速度（按下 "jump" 时的瞬时向上的速度
     float friction_factor_ = 0.85f;     // 摩擦系数（ Idle 时的缓冲效果，每帧乘以此系数）
 
     // ---属性相关参数
@@ -64,13 +64,13 @@ public:
     bool isDead() const { return is_dead_; }
     void setMoveForce(float move_force) { move_force_ = move_force; }
     void setMaxSpeed(float max_speed) { max_speed_ = max_speed; }
-    void setJumpForce(float jump_force) { jump_force_ = jump_force; }
+    void setJumpVelocity(float jump_force) { jump_vel_ = jump_force; }
     void setFrictionFactor(float friction_factor) { friction_factor_ = friction_factor; }
     void setStunnedDuration(float stunned_duration) { stunned_duration_ = stunned_duration; }
 
     float getMoveForce() const { return move_force_; }
     float getMaxSpeed() const { return max_speed_; }
-    float getJumpForce() const { return jump_force_; }
+    float getJumpVelocity() const { return jump_vel_; }
     float getFrictionFactor() const { return friction_factor_; }
     float getStunnedDuration() const { return stunned_duration_; }
 
