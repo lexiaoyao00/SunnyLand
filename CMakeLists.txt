@@ -60,6 +60,7 @@ add_executable(${TARGET} src/main.cpp
                         src/engine/audio/audio_player.cpp
 
                         src/game/scene/game_scene.cpp
+                        src/game/data/session_data.cpp
                         src/game/component/player_component.cpp
                         src/game/component/ai_component.cpp
                         src/game/component/state/idle_state.cpp

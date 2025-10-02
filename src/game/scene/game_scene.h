@@ -6,6 +6,10 @@ namespace engine::object {
     class GameObject;
 }
 
+namespace game::data {
+    class SessionData;
+}
+
 
 namespace game::scene {
     /**
@@ -13,9 +17,12 @@ namespace game::scene {
      *
      */
     class GameScene final : public engine::scene::Scene {
+        std::shared_ptr<game::data::SessionData> game_session_data_; // 场景共享数据，用 shared_ptr 管理
         engine::object::GameObject* player_ = nullptr; // 测试对象
     public:
-        GameScene(std::string name, engine::core::Context& context, engine::scene::SceneManager& scene_manager);
+        GameScene(engine::core::Context& context,
+                engine::scene::SceneManager& scene_manager,
+                std::shared_ptr<game::data::SessionData> data = nullptr);
 
         void init() override;
         void update(float delta_time) override;
@@ -31,6 +38,7 @@ namespace game::scene {
 
         void handleObjectCollisions(); // 处理对象碰撞
         void handleTileTriggers();   // 处理瓦片触发事件
+        void handlePlayerDamage(int damage); // 处理玩家受伤（更新得分、UI 等）
         void PlayerVSEnemyCollision(engine::object::GameObject* player, engine::object::GameObject* enemy);
         void PlayerVSItemCollision(engine::object::GameObject* player, engine::object::GameObject* item);
 
@@ -45,6 +53,9 @@ namespace game::scene {
          * @param tag 特效标签（决定特效类型）
          */
         void createEffect(const glm::vec2& center_pos, const std::string& tag);
+
+        // 测试函数
+        void testSaveAndLoad();
 
     };
 
