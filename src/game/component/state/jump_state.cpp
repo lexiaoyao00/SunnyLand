@@ -6,6 +6,7 @@
 #include "../../../engine/core/context.h"
 #include "../../../engine/component/physics_component.h"
 #include "../../../engine/component/sprite_component.h"
+#include "../../../engine/component/audio_component.h"
 #include "../../../engine/input/input_manager.h"
 #include "../player_component.h"
 
@@ -20,6 +21,10 @@ namespace game::component::state{
         auto physics_component = player_component_->getPhysicsComponent();
         physics_component->velocity_.y = - player_component_->getJumpVelocity(); // 向上跳
         spdlog::debug("JumpState::enter, velocity.y = {}", physics_component->velocity_.y);
+
+        if (auto* audio_component = player_component_->getAudioComponent(); audio_component){
+            audio_component->playSound("jump");
+        }
     }
 
     void JumpState::exit()

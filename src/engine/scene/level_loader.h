@@ -9,6 +9,7 @@ namespace engine::component {
     struct TileInfo;
     enum class TileType;
     class AnimationComponent;
+    class AudioComponent;
 }
 
 namespace engine::scene {
@@ -38,6 +39,8 @@ private:
      * @param sprite_size 每一帧动画的尺寸
      */
     void addAnimation(const nlohmann::json& anim_json, engine::component::AnimationComponent* ac, const glm::vec2& sprite_size);
+
+    void addSound(const nlohmann::json& sound_json, engine::component::AudioComponent* audio_component);
 
     /**
      * @brief 获取瓦片属性

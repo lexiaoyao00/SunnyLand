@@ -21,6 +21,11 @@ namespace engine::physics
     class PhysicsEngine;
 }
 
+namespace engine::audio
+{
+    class AudioPlayer;
+}
+
 namespace engine::core
 {
 
@@ -33,6 +38,7 @@ namespace engine::core
         engine::render::Camera &camera_;
         engine::resource::ResourceManager &resource_manager_;
         engine::physics::PhysicsEngine &physics_engine_;
+        engine::audio::AudioPlayer &audio_player_;
 
 
     public:
@@ -41,7 +47,8 @@ namespace engine::core
             engine::render::Renderer &renderer,
             engine::render::Camera &camera,
             engine::resource::ResourceManager &resource_manager,
-            engine::physics::PhysicsEngine &physics_engine);
+            engine::physics::PhysicsEngine &physics_engine,
+            engine::audio::AudioPlayer &audio_player);
 
         Context(const Context &) = delete;
         Context &operator=(const Context &) = delete;
@@ -54,5 +61,6 @@ namespace engine::core
         engine::render::Camera &getCamera() const { return camera_; }
         engine::resource::ResourceManager &getResourceManager() const { return resource_manager_; }
         engine::physics::PhysicsEngine &getPhysicsEngine() const { return physics_engine_; }
+        engine::audio::AudioPlayer &getAudioPlayer() const { return audio_player_; }
     };
 } // namespace engine::core

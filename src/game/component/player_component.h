@@ -13,6 +13,7 @@ namespace engine::component {
     class SpriteComponent;
     class AnimationComponent;
     class HealthComponent;
+    class AudioComponent;
 }
 
 namespace game::component::state {
@@ -29,6 +30,7 @@ private:
     engine::component::SpriteComponent* sprite_component_ = nullptr;  // 指向 SpriteComponent 的非拥有指针
     engine::component::AnimationComponent* animation_component_ = nullptr;  // 指向 AnimationComponent 的非拥有指针
     engine::component::HealthComponent* health_component_ = nullptr;  // 指向 HealthComponent 的非拥有指针
+    engine::component::AudioComponent* audio_component_ = nullptr;  // 指向 AudioComponent 的非拥有指针
 
     std::unique_ptr<state::PlayerState> current_state_;
     bool is_dead_ = false;
@@ -68,6 +70,7 @@ public:
     engine::component::SpriteComponent* getSpriteComponent() const { return sprite_component_; }
     engine::component::AnimationComponent* getAnimationComponent() const { return animation_component_; }
     engine::component::HealthComponent* getHealthComponent() const { return health_component_; }
+    engine::component::AudioComponent* getAudioComponent() const { return audio_component_; }
 
     void setIsDead(bool is_dead) { is_dead_ = is_dead; }
     bool isDead() const { return is_dead_; }

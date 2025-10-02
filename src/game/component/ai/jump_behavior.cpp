@@ -4,6 +4,7 @@
 #include "../../../engine/component/physics_component.h"
 #include "../../../engine/component/transform_component.h"
 #include "../../../engine/component/sprite_component.h"
+#include "../../../engine/component/audio_component.h"
 
 #include <spdlog/spdlog.h>
 
@@ -26,6 +27,7 @@ void JumpBehavior::update(float delta_time, AIComponent &ai_component)
     auto* transform_component = ai_component.getTransformComponent();
     auto* animation_component = ai_component.getAnimationComponent();
     auto* sprite_component = ai_component.getSpriteComponent();
+    auto* audio_component = ai_component.getAudioComponent();
 
     if (!physics_component || !transform_component || !animation_component || !sprite_component) {
         spdlog::error("JumpBehavior: 缺少必要的组件，无法执行跳跃行为");
@@ -34,6 +36,9 @@ void JumpBehavior::update(float delta_time, AIComponent &ai_component)
 
     auto is_on_ground = physics_component->hasCollidedBelow();
     if (is_on_ground) {
+        if (audio_component && jump_timer_ < 0.001f) { // 刚刚落地时（进入 idle 状态）
+            audio_component->playSound("cry", -1, true);    // 使用空间音频播放声音
+        }
         jump_timer_ += delta_time;
         physics_component->velocity_.x = 0.0f;
 

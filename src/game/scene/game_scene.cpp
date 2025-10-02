@@ -14,6 +14,7 @@
 #include "../../engine/render/animation.h"
 #include "../../engine/physics/physics_engine.h"
 #include "../../engine/utils/math.h"
+#include "../../engine/audio/audio_player.h"
 
 #include "../component/player_component.h"
 #include "../component/ai_component.h"
@@ -54,6 +55,11 @@ void GameScene::init()
         context_.getInputManager().setShouldQuit(true);
         return;
     }
+
+    // 设置音量
+    context_.getAudioPlayer().setMusicVolume(0.2f);
+    context_.getAudioPlayer().setSoundVolume(0.5f);
+    context_.getAudioPlayer().playMusic("assets/audio/hurry_up_and_run.ogg", -1, 1000);
 
 
     Scene::init();
@@ -258,6 +264,8 @@ void GameScene::PlayerVSEnemyCollision(engine::object::GameObject *player, engin
         }
         // 玩家跳起效果
         player->getComponent<engine::component::PhysicsComponent>()->velocity_.y = -300.0f;
+        // 播放音效（此音效可以放在玩家的音频组件中调用）
+        context_.getAudioPlayer().playSound("assets/audio/punch2a.mp3");
     }
     // 碰撞敌人
     else {
@@ -278,6 +286,7 @@ void GameScene::PlayerVSItemCollision(engine::object::GameObject *player, engine
     auto item_aabb = item->getComponent<engine::component::ColliderComponent>()->getWorldAABB();
     spdlog::debug("玩家 {} 获得了物品 {}",player->getName(),item->getName());
     createEffect(item_aabb.position + item_aabb.size / 2.0f,item->getTag());
+    context_.getAudioPlayer().playSound("assets/audio/poka01.mp3");
 }
 
 void GameScene::createEffect(const glm::vec2 &center_pos, const std::string &tag)

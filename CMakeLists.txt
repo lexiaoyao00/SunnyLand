@@ -51,11 +51,13 @@ add_executable(${TARGET} src/main.cpp
                         src/engine/component/collider_component.cpp
                         src/engine/component/animation_component.cpp
                         src/engine/component/health_component.cpp
+                        src/engine/component/audio_component.cpp
                         src/engine/scene/scene.cpp
                         src/engine/scene/scene_manager.cpp
                         src/engine/scene/level_loader.cpp
                         src/engine/physics/physics_engine.cpp
                         src/engine/physics/collision.cpp
+                        src/engine/audio/audio_player.cpp
 
                         src/game/scene/game_scene.cpp
                         src/game/component/player_component.cpp

@@ -57,6 +57,11 @@
                  "value":3
                 }, 
                 {
+                 "name":"sound",
+                 "type":"string",
+                 "value":"{\n    \"jump\":\"assets\/audio\/cartoon-jump-6462.mp3\",\n    \"hurt\":\"assets\/audio\/monster.mp3\",\n    \"dead\":\"assets\/audio\/dead-8bit-41400.mp3\"\n}"
+                }, 
+                {
                  "name":"tag",
                  "type":"string",
                  "value":"player"
@@ -110,6 +115,11 @@
                  "value":1
                 }, 
                 {
+                 "name":"sound",
+                 "type":"string",
+                 "value":"{\n    \"cry\":\"assets\/audio\/frog_quak-81741.mp3\"\n}"
+                }, 
+                {
                  "name":"tag",
                  "type":"string",
                  "value":"enemy"
@@ -127,7 +137,6 @@
          "objectgroup":
             {
              "draworder":"index",
-             "id":2,
              "name":"",
              "objects":[
                     {

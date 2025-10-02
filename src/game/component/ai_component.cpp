@@ -4,6 +4,7 @@
 #include "../../engine/component/physics_component.h"
 #include "../../engine/component/animation_component.h"
 #include "../../engine/component/sprite_component.h"
+#include "../../engine/component/audio_component.h"
 #include "../../engine/object/game_object.h"
 #include <spdlog/spdlog.h>
 
@@ -46,8 +47,11 @@ void AIComponent::init()
     physics_component_ = owner_->getComponent<engine::component::PhysicsComponent>();
     animation_component_ = owner_->getComponent<engine::component::AnimationComponent>();
     sprite_component_ = owner_->getComponent<engine::component::SpriteComponent>();
+    audio_component_ = owner_->getComponent<engine::component::AudioComponent>();
 
-    if (!transform_component_ || !physics_component_ || !animation_component_ || !sprite_component_) {
+    // 检查必要的组件是否存在（音频组件非必要）
+    if (!transform_component_ || !physics_component_ || !animation_component_ ||
+        !sprite_component_) {
         spdlog::error("GameObject {} 上的 AIComponent 缺少必须的组件",owner_ ? owner_->getName() : "Unknown");
     }
 }

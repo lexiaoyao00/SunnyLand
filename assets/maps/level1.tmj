@@ -128,7 +128,7 @@
                  "type":"",
                  "visible":true,
                  "width":32,
-                 "x":640,
+                 "x":16,
                  "y":160
                 }, 
                 {
@@ -286,6 +286,23 @@
                  "width":21,
                  "x":464,
                  "y":352
+                }, 
+                {
+                 "height":95.75,
+                 "id":20,
+                 "name":"level2",
+                 "properties":[
+                        {
+                         "name":"tag",
+                         "type":"string",
+                         "value":"next_level"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":1440,
+                 "y":64
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -307,7 +324,7 @@
          "y":0
         }],
  "nextlayerid":7,
- "nextobjectid":20,
+ "nextobjectid":21,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
