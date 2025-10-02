@@ -9,6 +9,7 @@
 #include "../../engine/component/health_component.h"
 #include "../../engine/core/context.h"
 #include "../../engine/scene/level_loader.h"
+#include "../../engine/scene/scene_manager.h"
 #include "../../engine/input/input_manager.h"
 #include "../../engine/render/camera.h"
 #include "../../engine/render/animation.h"
@@ -59,7 +60,7 @@ void GameScene::init()
     // 设置音量
     context_.getAudioPlayer().setMusicVolume(0.2f);
     context_.getAudioPlayer().setSoundVolume(0.5f);
-    context_.getAudioPlayer().playMusic("assets/audio/hurry_up_and_run.ogg", -1, 1000);
+    // context_.getAudioPlayer().playMusic("assets/audio/hurry_up_and_run.ogg", -1, 1000);  // TODO:测试时暂时不播放背景音乐
 
 
     Scene::init();
@@ -96,7 +97,8 @@ void GameScene::clean()
 bool GameScene::initLevel()
 {
     engine::scene::LevelLoader level_loader;
-    if (!level_loader.loadLevel("assets/maps/level1.tmj", this)) {
+    auto level_path = levelNameToPath(scene_name_);
+    if (!level_loader.loadLevel(level_path, this)) {
         spdlog::error("Failed to load level");
         return false;
     }
@@ -220,6 +222,12 @@ void GameScene::handleObjectCollisions()
         } else if (obj1->getTag() == "hazard" && obj2->getName() == "player"){
             obj1->getComponent<game::component::PlayerComponent>()->takeDamage(1);
         }
+        // 玩家与关底触发器碰撞
+        else if (obj1->getName() == "player" && obj2->getTag() == "next_level"){
+            toNextLevel(obj2);
+        } else if (obj1->getTag() == "next_level" && obj2->getName() == "player"){
+            toNextLevel(obj1);
+        }
     }
 }
 
@@ -287,6 +295,13 @@ void GameScene::PlayerVSItemCollision(engine::object::GameObject *player, engine
     spdlog::debug("玩家 {} 获得了物品 {}",player->getName(),item->getName());
     createEffect(item_aabb.position + item_aabb.size / 2.0f,item->getTag());
     context_.getAudioPlayer().playSound("assets/audio/poka01.mp3");
+}
+
+void GameScene::toNextLevel(engine::object::GameObject *trigger)
+{
+    auto scene_name = trigger->getName();
+    auto next_scene = std::make_unique<game::scene::GameScene>(scene_name, context_, scene_manager_);
+    scene_manager_.requestReplaceScene(std::move(next_scene));
 }
 
 void GameScene::createEffect(const glm::vec2 &center_pos, const std::string &tag)

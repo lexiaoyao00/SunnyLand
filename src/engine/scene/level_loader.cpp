@@ -151,6 +151,38 @@ namespace engine::scene {
             if (gid == 0)
             {
                 // TODO: 自己绘制的形状，碰撞盒，触发器等，未来开发
+                if (object_json.value("point",false)) {
+                    continue;       // TODO:点对象处理方式
+                } else if (object_json.value("ellipse",false)) {
+                    continue;       // TODO:椭圆对象处理方式
+                } else if (object_json.value("polyline",false)) {
+                    continue;       // TODO:多边形对象处理方式
+                }
+                // 没有这些表示则默认时矩形对象
+                else {
+                    const std::string& object_name = object_json.value("name", "Unnamed");
+                    auto game_object = std::make_unique<engine::object::GameObject>(object_name);
+                    auto position = glm::vec2(object_json.value("x", 0.0f), object_json.value("y", 0.0f));
+                    auto dst_size = glm::vec2(object_json.value("width", 0.0f), object_json.value("height", 0.0f));
+                    auto rotation = object_json.value("rotation", 0.0f);
+                    game_object->addComponent<engine::component::TransformComponent>(position, glm::vec2(1.0f), rotation);
+
+                    // 添加碰撞组件和物理组件
+                    auto collider = std::make_unique<engine::physics::AABBCollider>(dst_size);
+                    auto* cc = game_object->addComponent<engine::component::ColliderComponent>(std::move(collider));
+                        // 自定义形状对象通常是 trigger 类型的，除非显示指定
+                    cc->setTrigger(object_json.value("trgger", true));
+                    game_object->addComponent<engine::component::PhysicsComponent>(&scene->getContext().getPhysicsEngine(), false);
+
+                    // 获取标签信息并设置
+                    if (auto tag = getTileProperty<std::string>(object_json, "tag"); tag) {
+                        game_object->setTag(tag.value());
+                    }
+
+                    // 添加到场景中
+                    scene->addGameObject(std::move(game_object));
+                    spdlog::info("Loaded object: {}", object_name);
+                }
             }
             else
             {

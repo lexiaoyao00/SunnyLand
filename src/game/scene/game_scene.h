@@ -34,6 +34,10 @@ namespace game::scene {
         void PlayerVSEnemyCollision(engine::object::GameObject* player, engine::object::GameObject* enemy);
         void PlayerVSItemCollision(engine::object::GameObject* player, engine::object::GameObject* item);
 
+        void toNextLevel(engine::object::GameObject* trigger); // 进入下一关
+
+        std::string levelNameToPath(const std::string& level_name) const {return "assets/maps/" + level_name + ".tmj";}
+
         /**
          * @brief 创建一次性特效
          *

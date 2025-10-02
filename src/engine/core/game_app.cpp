@@ -75,8 +75,8 @@ bool GameApp::init() {
     if (!initSceneManager()) return false;
 
 
-    // TODO:测试代码
-    auto scene = std::make_unique<game::scene::GameScene>("GameScene", *context_, *scene_manager_);
+    // 创建第一个场景并压入场景管理器
+    auto scene = std::make_unique<game::scene::GameScene>("level1", *context_, *scene_manager_);
     scene_manager_->requestPushScene(std::move(scene));
 
     is_running_ = true;
