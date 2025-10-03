@@ -34,6 +34,7 @@ namespace game::scene {
         [[nodiscard]] bool initLevel();         // 初始化关卡
         [[nodiscard]] bool initPlayer();        // 初始化玩家
         [[nodiscard]] bool initEnemyAndItem(); // 初始化敌人与道具
+        [[nodiscard]] bool initUI();          // 初始化UI
 
 
         void handleObjectCollisions(); // 处理对象碰撞

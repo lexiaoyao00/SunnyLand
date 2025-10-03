@@ -17,6 +17,8 @@
 #include "../../engine/physics/physics_engine.h"
 #include "../../engine/utils/math.h"
 #include "../../engine/audio/audio_player.h"
+#include "../../engine/ui/ui_manager.h"
+#include "../../engine/ui/ui_panel.h"
 
 #include "../component/player_component.h"
 #include "../component/ai_component.h"
@@ -60,6 +62,11 @@ void GameScene::init()
     }
     if (!initEnemyAndItem()) {
         spdlog::error("Failed to initialize enemy and item,cannot countinue...");
+        context_.getInputManager().setShouldQuit(true);
+        return;
+    }
+    if (!initUI()) {
+        spdlog::error("Failed to initialize UI,cannot countinue...");
         context_.getInputManager().setShouldQuit(true);
         return;
     }
@@ -204,6 +211,18 @@ bool GameScene::initEnemyAndItem()
     }
 
     return success;
+}
+
+bool GameScene::initUI()
+{
+    if (!ui_manager_->init(glm::vec2(640.0f, 360.0f))) return false;
+
+    // 创建一个透明的方形面板
+    ui_manager_->addElement(std::make_unique<engine::ui::UIPanel>(glm::vec2(100.0f, 100.0f),
+                                                                  glm::vec2(200.0f, 200.0f),
+                                                                  engine::utils::FColor{0.5f, 0.0f, 0.0f, 0.3f}));
+
+    return true;
 }
 
 void GameScene::handleObjectCollisions()

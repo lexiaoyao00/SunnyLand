@@ -4,12 +4,17 @@
 #include "../object/game_object.h"
 #include "../physics/physics_engine.h"
 #include "../render/camera.h"
+#include "../ui/ui_manager.h"
 #include <spdlog/spdlog.h>
 
 namespace engine::scene {
 
 Scene::Scene(std::string name, engine::core::Context &context, engine::scene::SceneManager &scene_manager)
-: scene_name_(name), context_(context), scene_manager_(scene_manager), is_initialized_(false)
+    : scene_name_(name),
+      context_(context),
+      scene_manager_(scene_manager),
+      ui_manager_(std::make_unique<engine::ui::UIManager>()),
+      is_initialized_(false)
 {
     spdlog::trace("Scene {} created", scene_name_);
 }
@@ -48,6 +53,9 @@ void Scene::update(float delta_time)
         }
     }
 
+    // 更新 UI
+    ui_manager_->update(delta_time, context_);
+
     processPendingAdditions();
 }
 
@@ -59,11 +67,16 @@ void Scene::render()
     {
             game_object->render(context_);
     }
+
+    ui_manager_->render(context_);
 }
 
 void Scene::handleInput()
 {
     if (!is_initialized_) return;
+
+    // 处理 UI 管理器的输入
+    if (ui_manager_->handleInput(context_)) return;
 
     for (auto it = game_objects_.begin(); it != game_objects_.end();)
     {

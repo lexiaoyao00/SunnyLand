@@ -59,6 +59,9 @@ add_executable(${TARGET} src/main.cpp
                         src/engine/physics/physics_engine.cpp
                         src/engine/physics/collision.cpp
                         src/engine/audio/audio_player.cpp
+                        src/engine/ui/ui_element.cpp
+                        src/engine/ui/ui_manager.cpp
+                        src/engine/ui/ui_panel.cpp
 
                         src/game/scene/game_scene.cpp
                         src/game/data/session_data.cpp

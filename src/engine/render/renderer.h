@@ -3,6 +3,7 @@
 #include <string>
 #include <optional>
 #include <glm/glm.hpp>
+#include "../utils/math.h"
 
 struct SDL_Renderer;
 struct SDL_FRect;
@@ -31,6 +32,7 @@ public:
 
     void drawUISprite(const Sprite& sprite, const glm::vec2& postion, const std::optional<glm::vec2>& size = std::nullopt);
 
+    void drawUIFillRect(const engine::utils::Rect& rect, const engine::utils::FColor& color);
 
     void present();         // 更新屏幕,包装 SDL_RenderPresent
     void clearScreen();    // 清空屏幕,包装  SDL_RenderClear

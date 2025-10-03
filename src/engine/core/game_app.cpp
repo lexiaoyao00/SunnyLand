@@ -167,6 +167,9 @@ bool GameApp::initSDL()
         return false;
     }
 
+    // 设置渲染器支持透明色
+    SDL_SetRenderDrawBlendMode(sdl_renderer_, SDL_BLENDMODE_BLEND);
+
     // 设置 VSync (注意：VSync 开启时，驱动程序会尝试将帧率限制到显示器刷新率，有可能会覆盖我们手动设置的帧率 target_fps)
     int vsync = config_->vsync_enabled_ ? SDL_RENDERER_VSYNC_ADAPTIVE : SDL_RENDERER_VSYNC_DISABLED;
     SDL_SetRenderVSync(sdl_renderer_, vsync);

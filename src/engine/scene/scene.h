@@ -20,6 +20,10 @@ namespace engine::object {
     class GameObject;
 }
 
+namespace engine::ui {
+    class UIManager;
+}
+
 namespace engine::scene {
 class SceneManager;
 
@@ -28,6 +32,8 @@ protected:
     std::string scene_name_;
     engine::core::Context& context_;
     engine::scene::SceneManager& scene_manager_;
+    std::unique_ptr<engine::ui::UIManager> ui_manager_;
+
     bool is_initialized_ = false;
     std::vector<std::unique_ptr<engine::object::GameObject>> game_objects_;         // 场景中的游戏对象
     std::vector<std::unique_ptr<engine::object::GameObject>> pending_additions_;   // 待添加的游戏对象（延时添加）
