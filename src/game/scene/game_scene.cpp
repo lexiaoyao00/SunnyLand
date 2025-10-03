@@ -13,6 +13,7 @@
 #include "../../engine/input/input_manager.h"
 #include "../../engine/render/camera.h"
 #include "../../engine/render/animation.h"
+#include "../../engine/render/text_renderer.h"
 #include "../../engine/physics/physics_engine.h"
 #include "../../engine/utils/math.h"
 #include "../../engine/audio/audio_player.h"
@@ -85,13 +86,14 @@ void GameScene::render()
 {
     // TODO:
     Scene::render();
+    testTextRenderer();
 }
 
 void GameScene::handleInput()
 {
     // TODO:
     Scene::handleInput();
-    testSaveAndLoad();
+    // testSaveAndLoad();
 }
 
 void GameScene::clean()
@@ -368,17 +370,26 @@ void GameScene::createEffect(const glm::vec2 &center_pos, const std::string &tag
 
 }
 
-void GameScene::testSaveAndLoad()
+void GameScene::testTextRenderer()
 {
-    auto input_manager = context_.getInputManager();
-    if (input_manager.isActionPressed("attack")) {
-        game_session_data_->saveToFile("assets/save.json");
-    }
-    if (input_manager.isActionPressed("pause")) {
-        game_session_data_->loadFromFile("assets/save.json");
-        spdlog::info("当前生命值：{}",game_session_data_->getCurrentHealth());
-        spdlog::info("当前分数：{}",game_session_data_->getCurrentScore());
-    }
+    auto& text_renderer = context_.getTextRenderer();
+    const auto& camera = context_.getCamera();
+
+    text_renderer.drawUIText("UI TEXT", "assets/fonts/VonwaonBitmap-16px.ttf", 32, glm::vec2(100.0f), {0, 1.0f, 0, 1.0f});
+    text_renderer.drawText(camera, "Map text", "assets/fonts/VonwaonBitmap-16px.ttf", 32, glm::vec2(200.0f));
 }
+
+// void GameScene::testSaveAndLoad()
+// {
+//     auto input_manager = context_.getInputManager();
+//     if (input_manager.isActionPressed("attack")) {
+//         game_session_data_->saveToFile("assets/save.json");
+//     }
+//     if (input_manager.isActionPressed("pause")) {
+//         game_session_data_->loadFromFile("assets/save.json");
+//         spdlog::info("当前生命值：{}",game_session_data_->getCurrentHealth());
+//         spdlog::info("当前分数：{}",game_session_data_->getCurrentScore());
+//     }
+// }
 
 } // namespace game::scene

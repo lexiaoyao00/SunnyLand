@@ -55,7 +55,8 @@ namespace game::scene {
         void createEffect(const glm::vec2& center_pos, const std::string& tag);
 
         // 测试函数
-        void testSaveAndLoad();
+        // void testSaveAndLoad();
+        void testTextRenderer();
 
     };
 
