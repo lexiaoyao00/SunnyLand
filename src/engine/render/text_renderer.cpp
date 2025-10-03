@@ -42,7 +42,7 @@ namespace engine::render {
         TTF_Quit(); // 确保在 ResourceManager 销毁之后调用
     }
 
-    void TextRenderer::drawUIText(const std::string &text, const std::string &font_id, int font_size, const glm::vec2 &position, const SDL_FColor &color)
+    void TextRenderer::drawUIText(const std::string &text, const std::string &font_id, int font_size, const glm::vec2 &position, const engine::utils::FColor &color)
     {
         TTF_Font* font = resource_manager_->getFont(font_id, font_size);
         if (!font) {
@@ -73,7 +73,7 @@ namespace engine::render {
         TTF_DestroyText(temp_text_object);
     }
 
-    void TextRenderer::drawText(const Camera &camera, const std::string &text, const std::string &font_id, int font_size, const glm::vec2 &position, const SDL_FColor &color)
+    void TextRenderer::drawText(const Camera &camera, const std::string &text, const std::string &font_id, int font_size, const glm::vec2 &position, const engine::utils::FColor &color)
     {
         glm::vec2 position_screen = camera.worldToScreen(position);
 

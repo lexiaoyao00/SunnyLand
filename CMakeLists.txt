@@ -62,6 +62,8 @@ add_executable(${TARGET} src/main.cpp
                         src/engine/ui/ui_element.cpp
                         src/engine/ui/ui_manager.cpp
                         src/engine/ui/ui_panel.cpp
+                        src/engine/ui/ui_image.cpp
+                        src/engine/ui/ui_label.cpp
 
                         src/game/scene/game_scene.cpp
                         src/game/data/session_data.cpp
