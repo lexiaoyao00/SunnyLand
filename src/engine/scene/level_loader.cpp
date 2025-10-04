@@ -125,7 +125,7 @@ namespace engine::scene {
         const auto& data = layer_json["data"];
 
         for (const auto& gid : data) {
-            tiles.emplace_back(getTileInfoBtGid(gid));
+            tiles.emplace_back(getTileInfoByGid(gid));
         }
 
         const std::string& layer_name = layer_json.value("name", "Unnamed");
@@ -186,7 +186,7 @@ namespace engine::scene {
             }
             else
             {
-                auto tile_info = getTileInfoBtGid(gid);
+                auto tile_info = getTileInfoByGid(gid);
                 if (tile_info.sprite.getTextureId().empty())
                 {
                     spdlog::error("Object gid {} not found in any tileset", gid);
@@ -434,7 +434,7 @@ void LevelLoader::addSound(const nlohmann::json & sound_json, engine::component:
         return engine::component::TileType::NORMAL;
     }
 
-    engine::component::TileInfo LevelLoader::getTileInfoBtGid(int gid)
+    engine::component::TileInfo LevelLoader::getTileInfoByGid(int gid)
     {
         if (gid == 0)
         {

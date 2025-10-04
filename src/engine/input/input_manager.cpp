@@ -5,8 +5,9 @@
 
 namespace engine::input {
 InputManager::InputManager(SDL_Renderer *sdl_renderer, const engine::core::Config *config)
+    : sdl_renderer_(sdl_renderer)
 {
-    if (!sdl_renderer) {
+    if (!sdl_renderer_) {
         spdlog::error("InputManager: SDL_Renderer is null");
         throw std::runtime_error("InputManager: SDL_Renderer is null");
     }

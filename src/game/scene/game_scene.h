@@ -71,6 +71,10 @@ namespace game::scene {
         void healWithUI(int amount);        // 增加生命，同时更新UI
         void updateHealthWithUI();          // 更新生命值UI(只适用于最大生命值不变的情况)
 
+        // 测试函数
+        void createTextButton();
+        void testButtonClicked();
+
     };
 
 

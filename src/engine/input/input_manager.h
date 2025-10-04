@@ -31,7 +31,7 @@ namespace engine::input
         std::unordered_map<std::string, ActionState> action_states_; // 存储每个动作的当前状态
 
         bool should_quit_ = false; // 退出标志
-        glm::vec2 mouse_position_; // 鼠标位置(针对屏幕坐标)
+        glm::vec2 mouse_position_; // 鼠标位置(针对窗口坐标)
 
     public:
         InputManager(SDL_Renderer *sdl_renderer, const engine::core::Config *config);

@@ -97,7 +97,7 @@ private:
      * @param gid 全局 id
      * @return engine::component::TileInfo 瓦片信息
      */
-    engine::component::TileInfo getTileInfoBtGid(int gid);
+    engine::component::TileInfo getTileInfoByGid(int gid);
 
     /**
      * @brief 根据全局 ID 获取瓦片json对象（用于对象层获取瓦片信息）
